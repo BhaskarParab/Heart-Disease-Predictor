@@ -1,8 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './InputPage.css';
-import Navbar from './Inputpagenavbar';
+import Navbar from '../Inputpagenavbar';
 
 interface FormData {
   feature1: string;
@@ -25,7 +25,7 @@ interface PredictionResponse {
 }
 
 const InputPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     feature1: '',
     feature2: '',

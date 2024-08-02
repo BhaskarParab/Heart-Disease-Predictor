@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import InputPage from './InputPage';
-import HistoryPage from './HistoryPage';
+import InputPage from './Components/InputPage';
+import HistoryPage from './Components/HistoryPage';
 import './App.css'; // Global styles
 
 const App: React.FC = () => {
