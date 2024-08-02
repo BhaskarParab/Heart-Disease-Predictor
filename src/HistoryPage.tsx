@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './HistoryPage.css';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import Navbar from './Historypagenavbar';
 
 interface HistoryItem {
   _id: string;
   feature1: number;
-  feature2: number; // Assuming Gender is stored as a number (1 for Male, 0 for Female)
+  feature2: number;
   feature3: number;
   feature4: number;
   feature5: number;
@@ -41,50 +43,52 @@ const HistoryPage: React.FC = () => {
 
   return (
     <div className="history-page">
-      <h1>Prediction History</h1>
-      {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>CP</th>
-            <th>TrestBPS</th>
-            <th>Chol</th>
-            <th>FBS</th>
-            <th>RestECG</th>
-            <th>Thalch</th>
-            <th>Exang</th>
-            <th>Oldpeak</th>
-            <th>Slope</th>
-            <th>CA</th>
-            <th>Thal</th>
-            <th>Prediction</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr key={item._id}>
-              <td>{item._id}</td>
-              <td>{item.feature1}</td>
-              <td>{item.feature2 === 1 ? 'Male' : 'Female'}</td>
-              <td>{item.feature3}</td>
-              <td>{item.feature4}</td>
-              <td>{item.feature5}</td>
-              <td>{item.feature6}</td>
-              <td>{item.feature7}</td>
-              <td>{item.feature8}</td>
-              <td>{item.feature9}</td>
-              <td>{item.feature10}</td>
-              <td>{item.feature11}</td>
-              <td>{item.feature12}</td>
-              <td>{item.feature13}</td>
-              <td>{item.prediction}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Navbar/>
+      {error && <Typography className="error" color="error">{error}</Typography>}
+      <TableContainer component={Paper} className="table-container">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Age</TableCell>
+              <TableCell>Gender</TableCell>
+              <TableCell>CP</TableCell>
+              <TableCell>TrestBPS</TableCell>
+              <TableCell>Chol</TableCell>
+              <TableCell>FBS</TableCell>
+              <TableCell>RestECG</TableCell>
+              <TableCell>Thalch</TableCell>
+              <TableCell>Exang</TableCell>
+              <TableCell>Oldpeak</TableCell>
+              <TableCell>Slope</TableCell>
+              <TableCell>CA</TableCell>
+              <TableCell>Thal</TableCell>
+              <TableCell>Prediction</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((item) => (
+              <TableRow key={item._id}>
+                <TableCell>{item._id}</TableCell>
+                <TableCell>{item.feature1}</TableCell>
+                <TableCell>{item.feature2 === 1 ? 'Male' : 'Female'}</TableCell>
+                <TableCell>{item.feature3}</TableCell>
+                <TableCell>{item.feature4}</TableCell>
+                <TableCell>{item.feature5}</TableCell>
+                <TableCell>{item.feature6}</TableCell>
+                <TableCell>{item.feature7}</TableCell>
+                <TableCell>{item.feature8}</TableCell>
+                <TableCell>{item.feature9}</TableCell>
+                <TableCell>{item.feature10}</TableCell>
+                <TableCell>{item.feature11}</TableCell>
+                <TableCell>{item.feature12}</TableCell>
+                <TableCell>{item.feature13}</TableCell>
+                <TableCell>{item.prediction}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }

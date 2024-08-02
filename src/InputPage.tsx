@@ -1,6 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './InputPage.css';
+import Navbar from './Inputpagenavbar';
 
 interface FormData {
   feature1: string;
@@ -23,9 +25,10 @@ interface PredictionResponse {
 }
 
 const InputPage: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     feature1: '',
-    feature2: '', // Default value for the dropdown
+    feature2: '',
     feature3: '',
     feature4: '',
     feature5: '',
@@ -60,7 +63,7 @@ const InputPage: React.FC = () => {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState: FormData) => ({
       ...prevState,
       [name]: value,
     }));
@@ -68,9 +71,8 @@ const InputPage: React.FC = () => {
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Allow only numeric values and handle decimal points
     const numericValue = value.replace(/[^0-9.]/g, '');
-    setFormData(prevState => ({
+    setFormData((prevState: FormData) => ({
       ...prevState,
       [name]: numericValue,
     }));
@@ -79,11 +81,10 @@ const InputPage: React.FC = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Convert form data values to appropriate types
     const data = {
       ...formData,
       feature1: parseFloat(formData.feature1),
-      feature2: formData.feature2, // Keep as string for gender
+      feature2: formData.feature2,
       feature3: parseFloat(formData.feature3),
       feature4: parseFloat(formData.feature4),
       feature5: parseFloat(formData.feature5),
@@ -97,7 +98,6 @@ const InputPage: React.FC = () => {
       feature13: parseFloat(formData.feature13),
     };
 
-    // Validate all fields are filled and values are correct
     const areFieldsValid = Object.entries(data).every(([key, value]) => {
       if (key === 'feature2') {
         return value === 'M' || value === 'F';
@@ -123,7 +123,7 @@ const InputPage: React.FC = () => {
 
   return (
     <div className="input-page">
-      <h1>Heart Disease Predictor</h1>
+      <Navbar title="Heart Disease Predictor" />
       <form onSubmit={handleSubmit} className="input-form">
         {Object.keys(formData).map((feature, index) => (
           feature === 'feature2' ? (
@@ -142,12 +142,12 @@ const InputPage: React.FC = () => {
           ) : (
             <input
               key={index}
-              type="text" // Use type text to handle the onInput event
+              type="text"
               name={feature}
               placeholder={placeholders[feature as keyof FormData] || feature}
               value={formData[feature as keyof FormData]}
               onChange={handleChange}
-              onInput={handleInput} // Use onInput to filter non-numeric characters
+              onInput={handleInput}
               required
               className="input-field"
             />
