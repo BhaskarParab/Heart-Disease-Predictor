@@ -1,19 +1,19 @@
-General Styling
+
 .App {
   font-family: Arial, sans-serif;
   text-align: center;
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
-  background-color: #f9f9f9; /* Light background for better contrast */
-  border-radius: 10px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  background-color: #f9f9f9; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
 }
 
 h1 {
   font-size: 28px;
   color: #333;
-  margin-bottom: 20px; /* Spacing below header */
+  margin-bottom: 20px; 
 }
 
 .form-header {
@@ -23,16 +23,17 @@ h1 {
 }
 
 form {
-  margin-left: 50px; /* Adjusted left margin */
+  margin-left: 50px;
+  margin-right: 50px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px; /* Spacing between fields */
+  gap: 15px; 
 }
 
 input, select {
-  width: 90%; /* Adjusted width */
-  padding: 12px; /* Adjusted padding */
-  font-size: 16px; /* Adjusted font size */
+  width: 90%;
+  padding: 12px; 
+  font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -46,8 +47,8 @@ input:focus, select:focus {
 }
 
 button {
-  padding: 12px 20px; /* Adjusted padding */
-  font-size: 16px; /* Adjusted font size */
+  padding: 12px 20px; 
+  font-size: 16px;
   color: #fff;
   background-color: #007bff;
   border: none;
@@ -58,7 +59,7 @@ button {
 
 button:hover {
   background-color: #0056b3;
-  transform: translateY(-2px); /* Slight lift effect */
+  transform: translateY(-2px); 
 }
 
 h2 {
@@ -77,18 +78,18 @@ p {
   cursor: pointer;
   margin-bottom: 20px;
   margin-left: 95%;
-  font-size: 32px; /* Icon size */
-  color: #007bff; /* Icon color */
+  font-size: 32px; 
+  color: #007bff;
   transition: color 0.2s ease;
 }
 
 .history-button:hover {
-  color: #0056b3; /* Hover color for icon */
+  color: #0056b3; 
 }
 
-/* Additional Enhancements */
+
 input::placeholder, select::placeholder {
-  color: #999; /* Placeholder text color */
+  color: #999; 
 }
 
 input:disabled, select:disabled {
@@ -97,12 +98,17 @@ input:disabled, select:disabled {
 }
 
 input.error, select.error {
-  border-color: #dc3545; /* Error state border color */
-  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Error state shadow */
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); 
 }
 
 .message {
   font-size: 18px;
-  color: #6c757d; /* Neutral color for additional messages */
+  color: #6c757d; 
   margin-top: 10px;
+}
+.Submit{
+  margin-left: 50px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }

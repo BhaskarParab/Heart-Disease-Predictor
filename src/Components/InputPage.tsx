@@ -1,7 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
+import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
 import './InputPage.css';
-// import Navbar from '../Inputpagenavbar'; // Update import path if necessary
 
 interface FormData {
   feature1: string;
@@ -63,7 +64,12 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     feature13: 'Thal',
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleTextFieldChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
@@ -128,39 +134,44 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       <form onSubmit={handleSubmit} className="input-form">
         {Object.keys(formData).map((feature, index) => (
           feature === 'feature2' ? (
-            <select
-              key={index}
-              name={feature}
-              value={formData[feature as keyof FormData]}
-              onChange={handleChange}
-              required
-              className="input-select"
-            >
-              <option value="" disabled>Select Gender</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
+            <FormControl key={index} fullWidth margin="normal">
+              <InputLabel id={`label-${feature}`}>Gender</InputLabel>
+              <Select
+                labelId={`label-${feature}`}
+                name={feature}
+                value={formData[feature as keyof FormData]}
+                onChange={handleSelectChange}
+                required
+              >
+                {/* <MenuItem value="" disabled>Select Gender</MenuItem> */}
+                <MenuItem value="M">Male</MenuItem>
+                <MenuItem value="F">Female</MenuItem>
+              </Select>
+            </FormControl>
           ) : (
-            <input
+            <TextField
               key={index}
               type="text"
               name={feature}
-              placeholder={placeholders[feature as keyof FormData] || feature}
+              label={placeholders[feature as keyof FormData] || feature}
               value={formData[feature as keyof FormData]}
-              onChange={handleChange}
+              onChange={handleTextFieldChange}
               onInput={handleInput}
               required
-              className="input-field"
+              fullWidth
+              margin="normal"
             />
           )
         ))}
-        <button type="submit" className="submit-button">Submit</button>
+       
       </form>
-      {prediction !== null && <h2 className="prediction-result">Prediction: {prediction}</h2>}
-      {error && <p className="error-message">{error}</p>
-    }
-</div>
-);
+      <div className='Submit'>
+      <Button type="submit" variant="contained" color="primary">Submit</Button>
+      </div>
+      {prediction !== null && <Typography variant="h5" color="textSecondary" className="prediction-result">Prediction: {prediction}</Typography>}
+      {error && <Typography variant="body1" color="error" className="error-message">{error}</Typography>}
+    </div>
+  );
 }
 
 export default InputPage;
