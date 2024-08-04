@@ -163,11 +163,12 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
             />
           )
         ))}
-       
-      </form>
-      <div className='Submit'>
+              <div className='Submit'>
       <Button type="submit" variant="contained" color="primary">Submit</Button>
       </div>
+       
+      </form>
+
       {prediction !== null && <Typography variant="h5" color="textSecondary" className="prediction-result">Prediction: {prediction}</Typography>}
       {error && <Typography variant="body1" color="error" className="error-message">{error}</Typography>}
     </div>
