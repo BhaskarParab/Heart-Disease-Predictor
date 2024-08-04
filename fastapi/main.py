@@ -1,11 +1,20 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import BaseModel, Field
+from passlib.context import CryptContext
 from bson import ObjectId
+import motor.motor_asyncio
+import jwt
 import joblib
 import numpy as np
-import motor.motor_asyncio
 import logging
+from pydantic import validator
+
+
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Load the pre-trained model
 model = joblib.load('HDP.pkl')
@@ -15,7 +24,6 @@ app = FastAPI()
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 # Set up CORS middleware
 app.add_middleware(
@@ -28,8 +36,25 @@ app.add_middleware(
 
 # MongoDB client setup
 client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.prediction_db
-collection = db.predictions
+db = client.heart_disease_predictor
+users_collection = db.users
+predictions_collection = db.predictions
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+class User(BaseModel):
+    username: str
+    password: str
+    email: str
+    gender: str
+    dob: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 class PredictionRequest(BaseModel):
     feature1: float = Field(..., description="Age")
@@ -55,8 +80,81 @@ class PredictionRequest(BaseModel):
         else:
             raise ValueError("Gender must be 'M' or 'F'")
 
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+async def get_user(username: str):
+    user = await users_collection.find_one({"username": username})
+    if user:
+        return User(**user)
+
+async def authenticate_user(username: str, password: str):
+    user = await get_user(username)
+    if not user or not verify_password(password, user.password):
+        return False
+    return user
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=HTTPException,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("username")
+        if username is None:
+            raise credentials_exception
+    except jwt.PyJWTError:
+        raise credentials_exception
+    user = await get_user(username=username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+@app.post("/register")
+async def register(user: User):
+    logger.info(f"Registering user: {user.username}")
+    if await users_collection.find_one({"username": user.username}):
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    hashed_password = pwd_context.hash(user.password)
+    new_user = {
+        "username": user.username,
+        "password": hashed_password,
+        "email": user.email,
+        "gender": user.gender,
+        "dob": user.dob
+    }
+    try:
+        result = await users_collection.insert_one(new_user)
+        logger.info(f"User registered with ID: {result.inserted_id}")
+        return {"message": "User registered successfully"}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=HTTPException,
+            detail="Incorrect username or password",
+        )
+    access_token = create_access_token(data={"username": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @app.post("/predict")
-async def predict(data: PredictionRequest):
+async def predict(data: PredictionRequest, current_user: User = Depends(get_current_user)):
     try:
         features = np.array([
             data.feature1, data.feature2, data.feature3, data.feature4, 
@@ -69,7 +167,8 @@ async def predict(data: PredictionRequest):
         # Save the prediction and features to MongoDB
         prediction_record = data.dict()
         prediction_record['prediction'] = int(prediction)
-        result = await collection.insert_one(prediction_record)
+        prediction_record['username'] = current_user.username
+        result = await predictions_collection.insert_one(prediction_record)
 
         return {"id": str(result.inserted_id), "prediction": int(prediction)}
     except Exception as e:
@@ -77,16 +176,16 @@ async def predict(data: PredictionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/history")
-async def get_history():
+async def get_history(current_user: User = Depends(get_current_user)):
     try:
-        predictions = await collection.find().to_list(None)
+        predictions = await predictions_collection.find({"username": current_user.username}).to_list(None)
         for prediction in predictions:
             prediction['_id'] = str(prediction['_id'])  # Convert ObjectId to string
         return predictions
     except Exception as e:
         logger.error(f"Error fetching history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-        
+
 @app.get("/")
 async def read_root():
     return {"message": "Welcome to the Heart Disease Predictor API!"}

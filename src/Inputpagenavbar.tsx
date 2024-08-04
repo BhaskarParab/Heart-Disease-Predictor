@@ -1,21 +1,44 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HistoryIcon from '@mui/icons-material/History';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import './Inputpagenavbar.css';
 
 interface NavbarProps {
   title: string;
+  onLogout?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ title }) => {
+const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBackClick = () => {
+    navigate('/input'); // Replace with the actual path of your input page
+  };
+
+  const isHistoryPage = location.pathname === '/history';
 
   return (
     <div className="navbar">
-      <h1>{title}</h1>
-      <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
+      {isHistoryPage ? (
+        <>
+          <ArrowBackIcon onClick={handleBackClick} className="back-icon" />
+          <h1>Prediction History</h1>
+        </>
+      ) : (
+        <>
+          <h1>{title}</h1>
+          <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
+        </>
+      )}
+      {onLogout && (
+        <button onClick={onLogout} className="logout-button">
+          Logout
+        </button>
+      )}
     </div>
   );
 };
 
-export default Navbar;
+export default InputPageNavbar;

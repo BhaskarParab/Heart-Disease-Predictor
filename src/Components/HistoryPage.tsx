@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './HistoryPage.css';
-import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography} from '@mui/material';
-import Navbar from '../Historypagenavbar';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+// import InputPageNavbar from '../Inputpagenavbar';
 
 interface HistoryItem {
   _id: string;
@@ -25,11 +25,18 @@ interface HistoryItem {
 const HistoryPage: React.FC = () => {
   const [data, setData] = useState<HistoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem('token');
       try {
-        const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history'); // Adjust the URL as needed
+        const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history', {
+          params: { user_id: userId },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setData(response.data);
         setError(null);
       } catch (error) {
@@ -39,17 +46,16 @@ const HistoryPage: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [userId]);
 
   return (
     <div className="history-page">
-      <Navbar/>
+      {/* <InputPageNavbar title={'Prediction History'} /> */}
       {error && <Typography className="error" color="error">{error}</Typography>}
       <TableContainer component={Paper} className="table-container">
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Age</TableCell>
               <TableCell>Gender</TableCell>
               <TableCell>CP</TableCell>
@@ -69,7 +75,6 @@ const HistoryPage: React.FC = () => {
           <TableBody>
             {data.map((item) => (
               <TableRow key={item._id}>
-                <TableCell>{item._id}</TableCell>
                 <TableCell>{item.feature1}</TableCell>
                 <TableCell>{item.feature2 === 1 ? 'Male' : 'Female'}</TableCell>
                 <TableCell>{item.feature3}</TableCell>

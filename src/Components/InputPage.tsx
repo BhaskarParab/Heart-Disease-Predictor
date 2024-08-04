@@ -1,8 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './InputPage.css';
-import Navbar from '../Inputpagenavbar';
+// import Navbar from '../Inputpagenavbar'; // Update import path if necessary
 
 interface FormData {
   feature1: string;
@@ -24,8 +23,11 @@ interface PredictionResponse {
   prediction: string;
 }
 
-const InputPage: React.FC = () => {
-  // const navigate = useNavigate();
+interface InputPageProps {
+  onLogout: () => void;
+}
+
+const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
   const [formData, setFormData] = useState<FormData>({
     feature1: '',
     feature2: '',
@@ -63,19 +65,13 @@ const InputPage: React.FC = () => {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prevState: FormData) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const numericValue = value.replace(/[^0-9.]/g, '');
-    setFormData((prevState: FormData) => ({
-      ...prevState,
-      [name]: numericValue,
-    }));
+    setFormData(prevState => ({ ...prevState, [name]: numericValue }));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -112,7 +108,12 @@ const InputPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post<PredictionResponse>('http://127.0.0.1:8000/predict', data);
+      const token = localStorage.getItem('token');
+      const response = await axios.post<PredictionResponse>(
+        'http://127.0.0.1:8000/predict',
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setPrediction(response.data.prediction);
       setError(null);
     } catch (error) {
@@ -123,7 +124,7 @@ const InputPage: React.FC = () => {
 
   return (
     <div className="input-page">
-      <Navbar title="Heart Disease Predictor" />
+      {/* <Navbar title="Heart Disease Predictor" onLogout={onLogout} /> */}
       <form onSubmit={handleSubmit} className="input-form">
         {Object.keys(formData).map((feature, index) => (
           feature === 'feature2' ? (
@@ -156,9 +157,10 @@ const InputPage: React.FC = () => {
         <button type="submit" className="submit-button">Submit</button>
       </form>
       {prediction !== null && <h2 className="prediction-result">Prediction: {prediction}</h2>}
-      {error && <p className="error-message">{error}</p>}
-    </div>
-  );
+      {error && <p className="error-message">{error}</p>
+    }
+</div>
+);
 }
 
 export default InputPage;
