@@ -77,7 +77,7 @@ const Register: React.FC = () => {
   return (
     <Container maxWidth="xs">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
-        <Typography component="h1" variant="h5" ml={6}>
+        <Typography component="h1" variant="h5">
           Register
         </Typography>
         <Box component="form" onSubmit={handleSubmit} mt={2}>
@@ -148,20 +148,25 @@ const Register: React.FC = () => {
             InputLabelProps={{ shrink: true }}
             value={formData.dob}
             onChange={handleChange}
+           
           />
-          {error && <Alert severity="error">{error}</Alert>}
-          <Typography variant="body2" color="textSecondary" align="center" mt={2}>
-            Already have an account? <MuiLink href="/">Login</MuiLink>
-          </Typography>
+          <Box mt={2} />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ml: 9, mb:3,mt: 2}}
           >
             Register
           </Button>
+          <br/>
+          <div className='login'>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+          <Typography variant="body2" color="textSecondary" align="center" mr={-19} >
+           Already have an account? <span><MuiLink href="/">Login</MuiLink></span>
+          </Typography>
+          </div>
         </Box>
       </Box>
     </Container>

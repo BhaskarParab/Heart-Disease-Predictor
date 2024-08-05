@@ -21,21 +21,25 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
 
   return (
     <div className="navbar">
-      {isHistoryPage ? (
-        <>
-          <ArrowBackIcon onClick={handleBackClick} className="back-icon" />
-          <h1>Prediction History</h1>
-        </>
-      ) : (
-        <>
-          <h1>{title}</h1>
-          <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
-        </>
-      )}
+      <div className="left-section">
+        {isHistoryPage ? (
+          <>
+            <ArrowBackIcon onClick={handleBackClick} className="back-icon" />
+            <h1>Prediction History</h1>
+          </>
+        ) : (
+          <>
+            <h1>{title}</h1>
+            <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
+          </>
+        )}
+      </div>
       {onLogout && (
-        <button onClick={onLogout} className="logout-button">
-          Logout
-        </button>
+        <div className="right-section">
+          <button onClick={onLogout} className="logout-button">
+            Logout
+          </button>
+        </div>
       )}
     </div>
   );

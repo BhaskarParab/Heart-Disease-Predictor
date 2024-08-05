@@ -45,7 +45,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
   return (
     <Container maxWidth="xs">
       <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
-        <Typography component="h1" variant="h5" ml={6}>
+        <Typography component="h1" variant="h5">
           Login
         </Typography>
         <Box component="form" onSubmit={handleSubmit} mt={2}>
@@ -75,24 +75,26 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             value={formData.password}
             onChange={handleChange}
           />
-          {error && (
-            <Box mt={2}>
-              <Alert severity="error">{error}</Alert>
-            </Box>
-          )}
-          <Typography variant="body2" color="textSecondary" align="center" mt={2}>
-            Don't have an account? <Link href="/register">Register</Link>
-          </Typography>
-
+         
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 2, mb: 2 , ml: 10}}
           >
             Login
           </Button>
+          <br/>
+          {error && (
+            <Box mt={2}>
+              <Alert severity="error">{error}</Alert>
+            </Box>
+          )}
+          <Typography variant="body2" color="textSecondary" align="center" mt={1} mr={-20}>
+            Don't have an account? <Link href="/register">Register</Link>
+          </Typography>
+
 
         </Box>
       </Box>
