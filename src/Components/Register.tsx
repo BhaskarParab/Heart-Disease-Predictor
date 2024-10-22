@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent, ReactNode } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -31,7 +31,7 @@ const Register: React.FC = () => {
     dob: '',
   });
   const [error, setError] = useState<string | null>(null);
-  const [touched, setTouched] = useState<boolean>(false); // State to track if the form has been touched
+  const [touched, setTouched] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -39,7 +39,7 @@ const Register: React.FC = () => {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
     
     if (name === 'email') {
-      setTouched(true); // Set touched to true when email changes
+      setTouched(true);
     }
   };
 
@@ -56,7 +56,7 @@ const Register: React.FC = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setTouched(true); // Set touched to true to trigger validation messages
+    setTouched(true);
 
     if (!validateEmail(formData.email)) {
       setError('Please enter a valid email address.');
@@ -64,9 +64,9 @@ const Register: React.FC = () => {
     }
 
     try {
-      console.log('Submitting data:', formData);  // Debug log
+      console.log('Submitting data:', formData);
       const response = await axios.post('http://127.0.0.1:8000/register', formData);
-      console.log('Response:', response.data);  // Debug log
+      console.log('Response:', response.data);
       navigate('/');
     } catch (error) {
       console.error('Error:', error);
@@ -75,8 +75,30 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
+    <Box
+      style={{
+        backgroundImage: 'url(/bgimage.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Container
+        maxWidth="xs"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255)',
+          padding: '2rem',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <Typography component="h1" variant="h5">
           Register
         </Typography>
@@ -107,7 +129,7 @@ const Register: React.FC = () => {
             value={formData.email}
             onChange={handleChange}
             helperText={touched && !validateEmail(formData.email) ? "Please enter a valid email address." : ""}
-            error={touched && !validateEmail(formData.email)} // Display error if email is invalid and field has been touched
+            error={touched && !validateEmail(formData.email)}
           />
           <TextField
             variant="outlined"
@@ -148,7 +170,6 @@ const Register: React.FC = () => {
             InputLabelProps={{ shrink: true }}
             value={formData.dob}
             onChange={handleChange}
-           
           />
           <Box mt={2} />
           <Button
@@ -156,20 +177,21 @@ const Register: React.FC = () => {
             fullWidth
             variant="contained"
             color="primary"
-            sx={{ml: 9, mb:3,mt: 2}}
+            sx={{ ml: 9, mb: 3, mt: 2 }}
           >
             Register
           </Button>
-          <br/>
+          <br />
           <div className='login'>
-          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-          <Typography variant="body2" color="textSecondary" align="center" mr={-19} >
-           Already have an account? <span><MuiLink href="/">Login</MuiLink></span>
-          </Typography>
+             <Typography variant="body2" color="textSecondary" align="center" mr={-19} mt={-2}>
+              Already have an account? <span><MuiLink href="/">Login</MuiLink></span>
+            </Typography>
+            {error && <Alert severity="error" sx={{ mt: 2, mr: -20 }}>{error}</Alert>}
+           
           </div>
         </Box>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

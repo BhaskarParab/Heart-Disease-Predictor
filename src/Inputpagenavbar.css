@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #3a91b6;
   color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: 'Roboto', sans-serif; /* Match MUI default font */
@@ -61,5 +61,5 @@
 }
 
 .history-icon{
-  margin-left: 935px;
+  margin-left: 895px;
 }

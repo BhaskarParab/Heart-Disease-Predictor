@@ -43,8 +43,30 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box display="flex" flexDirection="column" alignItems="center" mt={8}>
+    <Box    style={{
+      backgroundImage: 'url(/bgimage.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      height: '100vh',
+      width: '100vw',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+    >
+    <Container 
+    maxWidth="xs"
+    style={{
+      backgroundColor: 'rgba(255, 255, 255)',
+      padding: '2rem',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }}
+    >
+     
         <Typography component="h1" variant="h5">
           Login
         </Typography>
@@ -61,6 +83,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             autoFocus
             value={formData.username}
             onChange={handleChange}
+            sx ={{ml: 10}}
           />
           <TextField
             variant="outlined"
@@ -74,6 +97,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             autoComplete="current-password"
             value={formData.password}
             onChange={handleChange}
+            sx={{mt: 12, ml: -10, width:145}}
           />
          
           <Button
@@ -86,19 +110,22 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             Login
           </Button>
           <br/>
+          <div className='error'>
           {error && (
-            <Box mt={2}>
+            <Box mt={4} mr={-20}>
               <Alert severity="error">{error}</Alert>
             </Box>
           )}
-          <Typography variant="body2" color="textSecondary" align="center" mt={1} mr={-20}>
+          </div>
+          <Typography variant="body2" color="textSecondary" align="center" mt={-1} ml={-45} mr={-30}>
             Don't have an account? <Link href="/register">Register</Link>
           </Typography>
 
 
         </Box>
-      </Box>
+      {/* </Box> */}
     </Container>
+    </Box>
   );
 };
 

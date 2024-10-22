@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from passlib.context import CryptContext
 from bson import ObjectId
 import motor.motor_asyncio
@@ -9,7 +9,6 @@ import jwt
 import joblib
 import numpy as np
 import logging
-from pydantic import validator
 
 
 SECRET_KEY = "your_secret_key"
@@ -185,6 +184,19 @@ async def get_history(current_user: User = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error fetching history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/myaccount", response_model=User)
+async def get_my_account(current_user: User = Depends(get_current_user)):
+    try:
+        user = await users_collection.find_one({"username": current_user.username})
+        if user:
+            user["_id"] = str(user["_id"])  # Convert ObjectId to string
+            return user
+        raise HTTPException(status_code=404, detail="User not found")
+    except Exception as e:
+        logger.error(f"Error fetching user data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/")
 async def read_root():
