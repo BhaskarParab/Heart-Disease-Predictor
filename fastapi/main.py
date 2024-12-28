@@ -196,6 +196,17 @@ async def get_my_account(current_user: User = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error fetching user data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.delete("/history/{history_id}")
+async def delete_history(history_id: str, current_user: User = Depends(get_current_user)):
+    try:
+        result = await predictions_collection.delete_one({"_id": ObjectId(history_id), "username": current_user.username})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="History not found or not authorized to delete")
+        return {"message": "History deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/")

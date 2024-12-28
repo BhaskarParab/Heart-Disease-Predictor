@@ -3,6 +3,7 @@ import axios from 'axios';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import './InputPage.css';
+import ResultModal from './ResultModal';
 
 interface FormData {
   feature1: string;
@@ -47,6 +48,7 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
 
   const [prediction, setPrediction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const placeholders: { [key in keyof FormData]: string } = {
     feature1: 'Age',
@@ -120,12 +122,17 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPrediction(response.data.prediction);
+      setPrediction(String(response.data.prediction));
+      setIsModalOpen(true);
       setError(null);
     } catch (error) {
       console.error('Error:', error);
       setError('Failed to fetch prediction. Please try again later.');
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Close modal
   };
 
   return (
@@ -169,8 +176,15 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
        
       </form>
 
-      {prediction !== null && <Typography variant="h5" color="textSecondary" className="prediction-result">Prediction: {prediction}</Typography>}
-      {error && <Typography variant="body1" color="error" className="error-message">{error}</Typography>}
+      {error && <Typography variant="body1" color="error">{error}</Typography>}
+
+      <ResultModal
+       open={isModalOpen}
+       prediction={prediction}
+       onClose={handleCloseModal}
+      />
+      {/* {prediction !== null && <Typography variant="h5" color="textSecondary" className="prediction-result">Prediction: {prediction}</Typography>}
+      {error && <Typography variant="body1" color="error" className="error-message">{error}</Typography>} */}
     </div>
   );
 }
