@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './HistoryPage.css';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
-// import InputPageNavbar from '../Inputpagenavbar';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Checkbox,
+  Button,
+  IconButton
+} from '@mui/material';
 
 interface HistoryItem {
   _id: string;
@@ -22,40 +34,98 @@ interface HistoryItem {
   prediction: string;
 }
 
+
 const HistoryPage: React.FC = () => {
   const [data, setData] = useState<HistoryItem[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setData(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Failed to fetch data. Please try again later.');
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history', {
-          params: { user_id: userId },
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setData(response.data);
-        setError(null);
-      } catch (error) {
-        console.error('Error:', error);
-        setError('Failed to fetch data. Please try again later.');
-      }
-    };
-
     fetchData();
-  }, [userId]);
+  }, []);
 
+  const handleSelect = (id: string) => {
+    setSelected((prevSelected) => {
+      const updated = new Set(prevSelected);
+      if (updated.has(id)) {
+        updated.delete(id);
+      } else {
+        updated.add(id);
+      }
+      return updated;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = data.map((item) => item._id);
+      setSelected(new Set(allIds));
+    } else {
+      setSelected(new Set());
+    }
+  };
+
+  const handleDelete = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          axios.delete(`http://127.0.0.1:8000/history/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+      setData((prevData) => prevData.filter((item) => !selected.has(item._id)));
+      setSelected(new Set());
+      setError(null);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Failed to delete selected history. Please try again later.');
+    }
+  };
+
+  const isAllSelected = data.length > 0 && selected.size === data.length;
+
+ 
   return (
     <div className="history-page">
-      {/* <InputPageNavbar title={'Prediction History'} /> */}
       {error && <Typography className="error" color="error">{error}</Typography>}
+      {selected.size > 0 && (
+        <div style={{ marginBottom: '10px', textAlign: 'left' }}>
+          <IconButton
+            color="warning"
+            onClick={handleDelete}
+            title="Delete Selected"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      )}
       <TableContainer component={Paper} className="table-container">
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>
+                <Checkbox
+                  indeterminate={selected.size > 0 && selected.size < data.length}
+                  checked={isAllSelected}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                />
+              </TableCell>
               <TableCell>Age</TableCell>
               <TableCell>Gender</TableCell>
               <TableCell>CP</TableCell>
@@ -75,6 +145,12 @@ const HistoryPage: React.FC = () => {
           <TableBody>
             {data.map((item) => (
               <TableRow key={item._id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selected.has(item._id)}
+                    onChange={() => handleSelect(item._id)}
+                  />
+                </TableCell>
                 <TableCell>{item.feature1}</TableCell>
                 <TableCell>{item.feature2 === 1 ? 'Male' : 'Female'}</TableCell>
                 <TableCell>{item.feature3}</TableCell>
@@ -96,6 +172,6 @@ const HistoryPage: React.FC = () => {
       </TableContainer>
     </div>
   );
-}
+};
 
 export default HistoryPage;
