@@ -15,9 +15,10 @@ import {
   Button,
   IconButton
 } from '@mui/material';
+import { getAuth, getIdToken } from 'firebase/auth'; // Import Firebase Auth methods
 
 interface HistoryItem {
-  _id: string;
+  id: string; // Changed from '_id' to 'id' (Firestore document ID)
   feature1: number;
   feature2: number;
   feature3: number;
@@ -34,15 +35,21 @@ interface HistoryItem {
   prediction: string;
 }
 
-
 const HistoryPage: React.FC = () => {
   const [data, setData] = useState<HistoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
+  // Fetch data from the backend
   const fetchData = async () => {
-    const token = localStorage.getItem('token');
+    const auth = getAuth();
+    setLoading(true);
+
     try {
+      // Get the Firebase token
+      const token = await getIdToken(auth.currentUser!);
+      
       const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -51,6 +58,8 @@ const HistoryPage: React.FC = () => {
     } catch (error) {
       console.error('Error:', error);
       setError('Failed to fetch data. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +67,7 @@ const HistoryPage: React.FC = () => {
     fetchData();
   }, []);
 
+  // Select or deselect a row
   const handleSelect = (id: string) => {
     setSelected((prevSelected) => {
       const updated = new Set(prevSelected);
@@ -70,18 +80,25 @@ const HistoryPage: React.FC = () => {
     });
   };
 
+  // Select or deselect all rows
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = data.map((item) => item._id);
+      const allIds = data.map((item) => item.id); // Use 'id' instead of '_id'
       setSelected(new Set(allIds));
     } else {
       setSelected(new Set());
     }
   };
 
+  // Delete selected rows
   const handleDelete = async () => {
-    const token = localStorage.getItem('token');
+    const auth = getAuth();
+    setLoading(true);
+
     try {
+      // Get the Firebase token
+      const token = await getIdToken(auth.currentUser!);
+
       await Promise.all(
         Array.from(selected).map((id) =>
           axios.delete(`http://127.0.0.1:8000/history/${id}`, {
@@ -89,18 +106,20 @@ const HistoryPage: React.FC = () => {
           })
         )
       );
-      setData((prevData) => prevData.filter((item) => !selected.has(item._id)));
+      setData((prevData) => prevData.filter((item) => !selected.has(item.id))); // Use 'id' instead of '_id'
       setSelected(new Set());
       setError(null);
     } catch (error) {
       console.error('Error:', error);
       setError('Failed to delete selected history. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Check if all items are selected
   const isAllSelected = data.length > 0 && selected.size === data.length;
 
- 
   return (
     <div className="history-page">
       {error && <Typography className="error" color="error">{error}</Typography>}
@@ -144,11 +163,11 @@ const HistoryPage: React.FC = () => {
           </TableHead>
           <TableBody>
             {data.map((item) => (
-              <TableRow key={item._id}>
+              <TableRow key={item.id}>
                 <TableCell>
                   <Checkbox
-                    checked={selected.has(item._id)}
-                    onChange={() => handleSelect(item._id)}
+                    checked={selected.has(item.id)} // Use 'id' instead of '_id'
+                    onChange={() => handleSelect(item.id)} // Use 'id' instead of '_id'
                   />
                 </TableCell>
                 <TableCell>{item.feature1}</TableCell>
@@ -170,6 +189,7 @@ const HistoryPage: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {loading && <Typography className="loading" color="textSecondary">Loading...</Typography>}
     </div>
   );
 };
