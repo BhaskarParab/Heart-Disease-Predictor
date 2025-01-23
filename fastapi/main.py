@@ -1,30 +1,43 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel, Field, validator
-from passlib.context import CryptContext
-from bson import ObjectId
-import motor.motor_asyncio
+import datetime
+import os
+import logging
+import re
 import jwt
 import joblib
 import numpy as np
-import logging
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, validator
+from dotenv import load_dotenv
+from firebase_admin import credentials, firestore, auth, initialize_app
+from firebase_admin.exceptions import FirebaseError
 
-
+# Constants
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Load the pre-trained model
+# Load pre-trained model
 model = joblib.load('HDP.pkl')
 
+# Load environment variables
+load_dotenv()
+service_account_path = os.getenv("SERVICE_ACCOUNT_PATH")
+
+if not service_account_path:
+    raise ValueError("SERVICE_ACCOUNT_PATH is not set in the environment variables.")
+
+# Firebase setup
+cred = credentials.Certificate(service_account_path)
+initialize_app(cred)
+db = firestore.client()
+
+# Firestore collections
+predictions_collection = db.collection("predictions")
+
+# FastAPI app
 app = FastAPI()
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Set up CORS middleware
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Adjust to match your React frontend URL
@@ -33,27 +46,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB client setup
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.heart_disease_predictor
-users_collection = db.users
-predictions_collection = db.predictions
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-class User(BaseModel):
+# Pydantic Models
+class RegisterRequest(BaseModel):
+    uid: str
     username: str
-    password: str
-    email: str
     gender: str
     dob: str
+    email: str
+    password: str
+    
+    @validator('email')
+    def validate_email(cls, value):
+        """ Custom email validation """
+        email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        if not re.match(email_regex, value):
+            raise ValueError("Invalid email format")
+        return value
 
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 class PredictionRequest(BaseModel):
     feature1: float = Field(..., description="Age")
@@ -79,136 +95,127 @@ class PredictionRequest(BaseModel):
         else:
             raise ValueError("Gender must be 'M' or 'F'")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-async def get_user(username: str):
-    user = await users_collection.find_one({"username": username})
-    if user:
-        return User(**user)
-
-async def authenticate_user(username: str, password: str):
-    user = await get_user(username)
-    if not user or not verify_password(password, user.password):
-        return False
-    return user
-
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=HTTPException,
-        detail="Could not validate credentials",
-    )
+# Helper Functions
+def decode_token(token: str):
+    """Decode Firebase ID token."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("username")
-        if username is None:
-            raise credentials_exception
-    except jwt.PyJWTError:
-        raise credentials_exception
-    user = await get_user(username=username)
-    if user is None:
-        raise credentials_exception
-    return user
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token
+    except FirebaseError as e:
+        logger.error(f"Token verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+def get_current_user(request: Request):
+    """Extract and decode the Firebase token from the Authorization header."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+    token = auth_header.split(" ")[1]
+    return decode_token(token)
+
+# Endpoints
 
 @app.post("/register")
-async def register(user: User):
-    logger.info(f"Registering user: {user.username}")
-    if await users_collection.find_one({"username": user.username}):
-        raise HTTPException(status_code=400, detail="Username already registered")
-
-    hashed_password = pwd_context.hash(user.password)
-    new_user = {
-        "username": user.username,
-        "password": hashed_password,
-        "email": user.email,
-        "gender": user.gender,
-        "dob": user.dob
-    }
+async def register_user(request: RegisterRequest):
+    """Register a new user with Firebase Authentication and save user data."""
     try:
-        result = await users_collection.insert_one(new_user)
-        logger.info(f"User registered with ID: {result.inserted_id}")
-        return {"message": "User registered successfully"}
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Ensure all fields are provided (email, password, display_name, etc.)
+        if not all([request.email, request.password, request.username, request.gender, request.dob]):
+            raise HTTPException(status_code=400, detail="All fields are required.")
 
-
-@app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=HTTPException,
-            detail="Incorrect username or password",
+        # Create the user with Firebase Authentication
+        user = auth.create_user(
+            email=request.email,
+            password=request.password,
+            display_name=request.display_name
         )
-    access_token = create_access_token(data={"username": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+        logger.info(f"User registered: {user.uid}")
+
+        # Prepare user data for Firestore
+        user_data = {
+            "uid": user.uid,
+            "username": request.username,
+            "gender": request.gender,
+            "dob": request.dob,
+            "createdAt": datetime.utcnow().isoformat(),
+        }
+
+        # Save user details in Firestore
+        user_doc = db.collection("users").document(user.uid)
+        user_doc.set(user_data)
+
+        # Return success response
+        return {"message": "User registered successfully", "uid": user.uid}
+
+    except FirebaseError as e:
+        # Log and raise Firebase specific error
+        logger.error(f"Error registering user: {e}")
+        raise HTTPException(status_code=400, detail=f"Error registering user: {str(e)}")
+    except Exception as e:
+        # Catch other errors and return a generic message
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=400, detail="An error occurred during registration.")
+
+
+@app.get("/auth/verify")
+async def verify_token(request: Request):
+    """Verify a Firebase ID token."""
+    user = get_current_user(request)
+    logger.info(f"Token verified for user: {user['uid']}")
+    return {"message": "Token verified", "user": user}
 
 @app.post("/predict")
-async def predict(data: PredictionRequest, current_user: User = Depends(get_current_user)):
+async def predict(data: PredictionRequest, request: Request):
+    """Predict heart disease risk based on input features."""
+    user = get_current_user(request)
     try:
-        features = np.array([
-            data.feature1, data.feature2, data.feature3, data.feature4, 
-            data.feature5, data.feature6, data.feature7, data.feature8, 
-            data.feature9, data.feature10, data.feature11, data.feature12, 
+        features = np.array([[
+            data.feature1, data.feature2, data.feature3, data.feature4,
+            data.feature5, data.feature6, data.feature7, data.feature8,
+            data.feature9, data.feature10, data.feature11, data.feature12,
             data.feature13
-        ]).reshape(1, -1)
+        ]]).reshape(1, -1)
         prediction = model.predict(features)[0]
 
-        # Save the prediction and features to MongoDB
         prediction_record = data.dict()
         prediction_record['prediction'] = int(prediction)
-        prediction_record['username'] = current_user.username
-        result = await predictions_collection.insert_one(prediction_record)
+        prediction_record['user_id'] = user['uid']
+        predictions_collection.add(prediction_record)
 
-        return {"id": str(result.inserted_id), "prediction": int(prediction)}
+        return {"prediction": int(prediction), "user": user['email']}
     except Exception as e:
-        logger.error(f"Error in prediction: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error during prediction: {e}")
+        raise HTTPException(status_code=500, detail="Error during prediction")
 
 @app.get("/history")
-async def get_history(current_user: User = Depends(get_current_user)):
+async def get_history(request: Request):
+    """Retrieve prediction history for the logged-in user."""
+    user = get_current_user(request)
     try:
-        predictions = await predictions_collection.find({"username": current_user.username}).to_list(None)
-        for prediction in predictions:
-            prediction['_id'] = str(prediction['_id'])  # Convert ObjectId to string
-        return predictions
+        predictions = predictions_collection.where("user_id", "==", user["uid"]).stream()
+        history = [{"id": doc.id, **doc.to_dict()} for doc in predictions]
+        return history
     except Exception as e:
         logger.error(f"Error fetching history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.get("/myaccount", response_model=User)
-async def get_my_account(current_user: User = Depends(get_current_user)):
-    try:
-        user = await users_collection.find_one({"username": current_user.username})
-        if user:
-            user["_id"] = str(user["_id"])  # Convert ObjectId to string
-            return user
-        raise HTTPException(status_code=404, detail="User not found")
-    except Exception as e:
-        logger.error(f"Error fetching user data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.delete("/history/{history_id}")
-async def delete_history(history_id: str, current_user: User = Depends(get_current_user)):
-    try:
-        result = await predictions_collection.delete_one({"_id": ObjectId(history_id), "username": current_user.username})
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="History not found or not authorized to delete")
-        return {"message": "History deleted successfully"}
-    except Exception as e:
-        logger.error(f"Error deleting history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Error fetching history")
 
+@app.delete("/history/{doc_id}")
+async def delete_history(doc_id: str, request: Request):
+    """Delete a specific prediction from the history."""
+    user = get_current_user(request)
+    try:
+        doc_ref = predictions_collection.document(doc_id)
+        doc = doc_ref.get()
+        if doc.exists and doc.to_dict().get("user_id") == user["uid"]:
+            doc_ref.delete()
+            logger.info(f"Prediction {doc_id} deleted by user {user['uid']}")
+            return {"message": "Prediction deleted successfully"}
+        raise HTTPException(status_code=403, detail="Unauthorized to delete this record")
+    except Exception as e:
+        logger.error(f"Error deleting prediction {doc_id}: {e}")
+        raise HTTPException(status_code=500, detail="Error deleting prediction")
 
 @app.get("/")
-async def read_root():
-    return {"message": "Welcome to the Heart Disease Predictor API!"}
+async def root():
+    """Root endpoint."""
+    return {"message": "Welcome to the Heart Disease Predictor API"}

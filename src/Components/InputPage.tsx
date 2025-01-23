@@ -1,7 +1,8 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
+import { getAuth, getIdToken } from 'firebase/auth'; // Import necessary Firebase functions
 import './InputPage.css';
 import ResultModal from './ResultModal';
 
@@ -66,20 +67,34 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     feature13: 'Thal',
   };
 
+  // Load form data from sessionStorage if available
+  useEffect(() => {
+    const savedData = sessionStorage.getItem('formData');
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
   const handleTextFieldChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({ ...prevState, [name]: value }));
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({ ...prevState, [name]: value }));
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const numericValue = value.replace(/[^0-9.]/g, '');
-    setFormData(prevState => ({ ...prevState, [name]: numericValue }));
+    const updatedData = { ...formData, [name]: numericValue };
+    setFormData(updatedData);
+    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -116,7 +131,14 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const authInstance = getAuth(); // Initialize Firebase Auth
+      const user = authInstance.currentUser;
+      if (!user) {
+        setError('No user found. Please log in again.');
+        return;
+      }
+
+      const token = await getIdToken(user); // Get the Firebase ID token
       const response = await axios.post<PredictionResponse>(
         'http://127.0.0.1:8000/predict',
         data,
@@ -125,6 +147,24 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       setPrediction(String(response.data.prediction));
       setIsModalOpen(true);
       setError(null);
+
+      // Reset form data and sessionStorage after successful submission
+      setFormData({
+        feature1: '',
+        feature2: '',
+        feature3: '',
+        feature4: '',
+        feature5: '',
+        feature6: '',
+        feature7: '',
+        feature8: '',
+        feature9: '',
+        feature10: '',
+        feature11: '',
+        feature12: '',
+        feature13: '',
+      });
+      sessionStorage.removeItem('formData');
     } catch (error) {
       console.error('Error:', error);
       setError('Failed to fetch prediction. Please try again later.');
@@ -137,7 +177,6 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
 
   return (
     <div className="input-page">
-      {/* <Navbar title="Heart Disease Predictor" onLogout={onLogout} /> */}
       <form onSubmit={handleSubmit} className="input-form">
         {Object.keys(formData).map((feature, index) => (
           feature === 'feature2' ? (
@@ -150,7 +189,6 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
                 onChange={handleSelectChange}
                 required
               >
-                {/* <MenuItem value="" disabled>Select Gender</MenuItem> */}
                 <MenuItem value="M">Male</MenuItem>
                 <MenuItem value="F">Female</MenuItem>
               </Select>
@@ -170,23 +208,20 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
             />
           )
         ))}
-              <div className='Submit'>
-      <Button type="submit" variant="contained" color="primary">Submit</Button>
-      </div>
-       
+        <div className="Submit">
+          <Button type="submit" variant="contained" color="primary">Submit</Button>
+        </div>
       </form>
 
       {error && <Typography variant="body1" color="error">{error}</Typography>}
 
       <ResultModal
-       open={isModalOpen}
-       prediction={prediction}
-       onClose={handleCloseModal}
+        open={isModalOpen}
+        prediction={prediction}
+        onClose={handleCloseModal}
       />
-      {/* {prediction !== null && <Typography variant="h5" color="textSecondary" className="prediction-result">Prediction: {prediction}</Typography>}
-      {error && <Typography variant="body1" color="error" className="error-message">{error}</Typography>} */}
     </div>
   );
-}
+};
 
 export default InputPage;
