@@ -21,7 +21,7 @@ model = joblib.load('HDP.pkl')
 
 # Load environment variables
 load_dotenv()
-service_account_path = os.getenv("SERVICE_ACCOUNT_PATH")
+service_account_path = os.getenv("REACT_APP_SERVICE_ACCOUNT_PATH")
 
 if not service_account_path:
     raise ValueError("SERVICE_ACCOUNT_PATH is not set in the environment variables.")

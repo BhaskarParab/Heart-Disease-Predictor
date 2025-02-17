@@ -4,15 +4,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #3a91b6;
+  background-color: #ffffff;
   color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
   font-family: 'Roboto', sans-serif;
   flex-wrap: wrap;
 }
 
 .navbar h1 {
-  color: #ffffffee;
+  color: #009dff;
   margin: 0;
   font-size: 24px;
 }
@@ -26,15 +26,15 @@
 
 .history-icon, .back-icon, .arrow-forward-icon {
   cursor: pointer;
-  font-size: 32px;
-  color: #fff;
+  font-size: 25px;
+  color: #009dff;
   margin-right: 10px;
 }
 
 .logout-button {
   background-color: transparent;
   border: none;
-  color: #fff;
+  color: #009dff;
   cursor: pointer;
   font-size: 16px;
   margin-left: 20px;

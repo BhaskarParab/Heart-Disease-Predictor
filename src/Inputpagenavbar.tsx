@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Avatar } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import './Inputpagenavbar.css';
-import heartIcon from './Animations/favicon-32x32.png'; // Add the path to your favicon image
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'; // Import Firebase Auth methods
+import heartIcon from './Animations/healthcare.png';
+import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth } from './firebase';
 
 interface NavbarProps {
   title: string;
@@ -15,21 +17,37 @@ interface NavbarProps {
 
 const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isGoogleUser, setIsGoogleUser] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Function to refresh user data
+  const refreshUser = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload(); // Refresh user data
+      setUser(auth.currentUser); // Update state
+      console.log('User refreshed:', auth.currentUser); // Debugging log
+    }
+  };
 
   useEffect(() => {
     const auth = getAuth();
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setIsAuthenticated(true); // User is authenticated
+        setIsAuthenticated(true);
+        setUser(user);
+        setIsGoogleUser(user.providerData.some((provider) => provider.providerId === 'google.com'));
+        await refreshUser(); // Ensure latest user data is fetched
       } else {
-        setIsAuthenticated(false); // User is not authenticated
+        setIsAuthenticated(false);
+        setUser(null);
+        setIsGoogleUser(false);
       }
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
   const handleBackClick = () => {
@@ -41,6 +59,8 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
       const auth = getAuth();
       await signOut(auth);
       setIsAuthenticated(false);
+      setUser(null);
+      setIsGoogleUser(false);
       navigate('/'); // Redirect to home page after logout
     } catch (error) {
       console.error('Logout Error:', error);
@@ -60,14 +80,13 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
           </>
         ) : (
           <>
-            <div className="navbar-title">
+            <div className="navbar-title" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
               <img src={heartIcon} alt="Heartview Icon" className="navbar-favicon" />
               <h1>{title || 'Heartview'}</h1>
             </div>
             {!isAuthenticated ? (
               <>
                 <ArrowBackIcon onClick={() => navigate('/')} className="back-icon" />
-                {/* <button onClick={() => navigate('/register')} className="nav-button">Register</button> */}
                 <button onClick={() => navigate('/login')} className="nav-button">Login</button>
               </>
             ) : (
@@ -75,17 +94,32 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
                 <ArrowBackIcon onClick={() => navigate('/')} className="back-icon" />
                 <ArrowForwardIcon onClick={() => navigate('/input')} className="back-icon" />
                 <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
-                <AccountCircleIcon onClick={() => navigate('/myaccount')} className="account-icon" />
               </>
             )}
           </>
         )}
       </div>
-      {isAuthenticated && onLogout && (
+
+      {isAuthenticated && (
         <div className="right-section">
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>
+          {isGoogleUser ? (
+            user?.photoURL && (
+              <Avatar
+                src={user.photoURL}
+                alt="Profile"
+                sx={{ width: 40, height: 40, marginLeft: '10px', cursor: 'pointer' }}
+                onClick={() => navigate('/myaccount')}
+              />
+            )
+          ) : (
+            <AccountCircleIcon
+              sx={{ width: 40, height: 40, marginLeft: '10px', cursor: 'pointer', color: 'gray' }}
+              onClick={() => navigate('/myaccount')}
+            />
+          )}
         </div>
       )}
     </div>

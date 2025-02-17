@@ -8,21 +8,40 @@ import MyAccount from "./MyAccount";
 import Navbar from "./Inputpagenavbar";
 import "./App.css"; // Global styles
 import Home from "./Components/Home";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-    }
+    const auth = getAuth();
+    
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        localStorage.setItem("token", user.refreshToken); // Save token
+      } else {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token"); // Remove token on logout
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
+    const auth = getAuth();
+    auth.signOut().then(() => {
+      setIsAuthenticated(false);
+      localStorage.removeItem("token");
+    });
   };
+
+  // Prevents flickering while authentication state is being determined
+  if (isAuthenticated === null) {
+    return (
+    <div>Loading...</div>);
+  }
 
   return (
     <Router>

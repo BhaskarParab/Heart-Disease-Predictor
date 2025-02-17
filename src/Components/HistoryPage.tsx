@@ -12,7 +12,6 @@ import {
   Paper,
   Typography,
   Checkbox,
-  Button,
   IconButton
 } from '@mui/material';
 import { getAuth, getIdToken } from 'firebase/auth'; // Import Firebase Auth methods
@@ -121,47 +120,47 @@ const HistoryPage: React.FC = () => {
   // Check if all items are selected
   const isAllSelected = data.length > 0 && selected.size === data.length;
 
-  const handleSelect = (id: string) => {
-    setSelected((prevSelected) => {
-      const updated = new Set(prevSelected);
-      if (updated.has(id)) {
-        updated.delete(id);
-      } else {
-        updated.add(id);
-      }
-      return updated;
-    });
-  };
+  // const handleSelect = (id: string) => {
+  //   setSelected((prevSelected) => {
+  //     const updated = new Set(prevSelected);
+  //     if (updated.has(id)) {
+  //       updated.delete(id);
+  //     } else {
+  //       updated.add(id);
+  //     }
+  //     return updated;
+  //   });
+  // };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const allIds = data.map((item) => item._id);
-      setSelected(new Set(allIds));
-    } else {
-      setSelected(new Set());
-    }
-  };
+  // const handleSelectAll = (checked: boolean) => {
+  //   if (checked) {
+  //     const allIds = data.map((item) => item._id);
+  //     setSelected(new Set(allIds));
+  //   } else {
+  //     setSelected(new Set());
+  //   }
+  // };
 
-  const handleDelete = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      await Promise.all(
-        Array.from(selected).map((id) =>
-          axios.delete(`http://127.0.0.1:8000/history/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
-      setData((prevData) => prevData.filter((item) => !selected.has(item._id)));
-      setSelected(new Set());
-      setError(null);
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Failed to delete selected history. Please try again later.');
-    }
-  };
+  // const handleDelete = async () => {
+  //   const token = localStorage.getItem('token');
+  //   try {
+  //     await Promise.all(
+  //       Array.from(selected).map((id) =>
+  //         axios.delete(`http://127.0.0.1:8000/history/${id}`, {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         })
+  //       )
+  //     );
+  //     setData((prevData) => prevData.filter((item) => !selected.has(item._id)));
+  //     setSelected(new Set());
+  //     setError(null);
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     setError('Failed to delete selected history. Please try again later.');
+  //   }
+  // };
 
-  const isAllSelected = data.length > 0 && selected.size === data.length;
+  // const isAllSelected = data.length > 0 && selected.size === data.length;
 
  
   return (

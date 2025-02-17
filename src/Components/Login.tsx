@@ -7,6 +7,8 @@ import {
   Typography,
   Link,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import {
   getAuth,
@@ -55,6 +57,11 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
       // If login is successful, set authentication state and navigate
       console.log("User logged in:", userCredential.user);
       setIsAuthenticated(true);
+
+      // Store login state
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(userCredential.user));
+
       navigate("/input"); // Redirect to input page or any other page you prefer
     } catch (error: any) {
       console.error("Error:", error.message);
@@ -81,6 +88,9 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
       });
 
       localStorage.setItem("token", user.refreshToken); // Save token to localStorage
+      // Store login state
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(user));
 
       navigate("/input");
     } catch (err: any) {
@@ -93,16 +103,18 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
     <Box
       display="flex"
       flexDirection="row"
-      bgcolor="#f7f9fc"
-      marginLeft="10px"
+      bgcolor="#ffffff"
       height="100vh"
-      width="100vw"
+      width="100%"
+      maxWidth="100vw"
+      overflow="hidden"
+      position="relative"
     >
       {/* Left Section */}
       <Box
         flex={1}
         p={4}
-        bgcolor="#f7f9fc"
+        bgcolor="#ffffff"
         display="flex"
         marginBottom="10%"
         flexDirection="column"
@@ -110,7 +122,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
       >
         <Box display="flex" alignItems="center" mb={4}>
           <img
-            src="/favicon.ico"
+            src="/healthcare.png"
             alt="Logo"
             style={{ width: "30px", height: "30px", marginRight: "12px" }}
           />
@@ -186,21 +198,20 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
         justifyContent="center"
         alignItems="center"
         bgcolor="white"
-        px={4}
-        marginRight="100px"
         sx={{
           padding: "2rem",
-          borderRadius: "8px",
-          marginTop: "auto",
-          marginBottom: "auto",
-          width: "90%",
+          borderRadius: "12px",
+          margin: "auto",
+          width: "100%",
           maxWidth: "400px",
           height: "auto",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
+          boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.1)",
+          position: "relative",
+          right: 0,
         }}
       >
         <img
-          src="/favicon.ico"
+          src="/healthcare.png"
           alt="Logo"
           style={{
             width: "80px",
@@ -209,13 +220,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             borderRadius: "50%",
           }}
         />
-        <Typography
-          component="h2"
-          variant="h6"
-          color="Black"
-          // fontWeight="bold"
-          mb={1}
-        >
+        <Typography component="h2" variant="h6" color="Black" mb={1}>
           Heartview
         </Typography>
         <Typography variant="body1" color="#b3b3b3" mb={4}>
@@ -223,139 +228,156 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
         </Typography>
 
         {/* Login Form */}
-  <Box component="form" onSubmit={handleSubmit} maxWidth="400px" width="100%">
-    <TextField
-      variant="outlined"
-      margin="normal"
-      required
-      fullWidth
-      id="email"
-      placeholder="Enter your Email"
-      name="email"
-      type="email"
-      InputProps={{
-        startAdornment: (
-          <Box component="span" mr={1} color="white">
-            <i className="fas fa-envelope" />
-          </Box>
-        ),
-      }}
-      autoFocus
-      value={formData.email}
-      onChange={handleChange}
-      sx={{
-        bgcolor: "white",
-        borderRadius: "4px",
-        input: { color: "black" },
-        "& .MuiOutlinedInput-notchedOutline": { borderColor: "#4f4f4f" },
-      }}
-    />
-    <TextField
-      variant="outlined"
-      margin="normal"
-      required
-      fullWidth
-      name="password"
-      placeholder="Password"
-      type="password"
-      id="password"
-      InputProps={{
-        endAdornment: (
-          <Box component="span" mr={1} color="">
-            {/* <i className="fas fa-eye-slash" /> */}
-          </Box>
-        ),
-      }}
-      value={formData.password}
-      onChange={handleChange}
-      sx={{
-        bgcolor: "white",
-        borderRadius: "4px",
-        input: { color: "black" },
-        // "& .MuiOutlinedInput-notchedOutline": { borderColor: "#4f4f4f" },
-      }}
-    />
-    {/* Error Alert */}
-    {error && (
-      <Box mt={2}>
-        <Alert severity="error" sx={{ bgcolor: "#522222", color: "#ffffff" }}>
-          {error}
-        </Alert>
-      </Box>
-    )}
-    {/* Login Button */}
-    <Button
-      type="submit"
-      fullWidth
-      variant="contained"
-      sx={{
-        mt: 3,
-        bgcolor: "#7b2dfb",
-        color: "#ffffff",
-        "&:hover": { bgcolor: "#5c1ac9" },
-      }}
-    >
-      Login
-    </Button>
+        <Box component="form" onSubmit={handleSubmit} maxWidth="400px" width="100%">
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            placeholder="Enter your Email"
+            name="email"
+            type="email"
+            InputProps={{
+              startAdornment: (
+                <Box component="span" mr={1} color="action.active">
+                  <i className="fas fa-envelope" />
+                </Box>
+              ),
+            }}
+            autoFocus
+            value={formData.email}
+            onChange={handleChange}
+            sx={{
+              bgcolor: "background.paper",
+              borderRadius: "8px",
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#7b2dfb",
+                },
+              },
+            }}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            placeholder="Password"
+            type="password"
+            id="password"
+            InputProps={{
+              endAdornment: (
+                <Box component="span" mr={1} color="action.active">
+                  <i className="fas fa-eye-slash" />
+                </Box>
+              ),
+            }}
+            value={formData.password}
+            onChange={handleChange}
+            sx={{
+              bgcolor: "background.paper",
+              borderRadius: "8px",
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#7b2dfb",
+                },
+              },
+            }}
+          />
+          {/* Error Alert */}
+          {error && (
+            <Box mt={2}>
+              <Alert severity="error" sx={{ bgcolor: "#522222", color: "#ffffff" }}>
+                {error}
+              </Alert>
+            </Box>
+          )}
+          {/* Login Button */}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 3,
+              mb: 2,
+              bgcolor: "#7b2dfb",
+              color: "#ffffff",
+              borderRadius: "8px",
+              padding: "12px",
+              fontWeight: "bold",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#5c1ac9" },
+            }}
+          >
+            Login
+          </Button>
 
-    {/* Footer Links */}
-    <Box mt={2} display="flex" justifyContent="space-between" alignItems="center" color="#b3b3b3">
-      <Typography variant="body2">
-        <Box component="span">
-          Remember me
-        </Box>
-      </Typography>
-      <Typography variant="body2">
-        <Link href="#" color="#b3b3b3" underline="hover">
-          Forgot Password?
-        </Link>
-      </Typography>
-    </Box>
-    <Typography
-      variant="body2"
-      align="center"
-      mt={2}
-      color="#b3b3b3"
-    >
-      Not a member?{' '}
-      <Link href="/register" color="black" underline="hover">
-        Create New Account
-      </Link>
-    </Typography>
-    <Box mt={3} display="flex" alignItems="center">
-      <Box flex={1} height="1px" bgcolor="#4f4f4f" />
-      <Typography variant="body2" color="#b3b3b3" mx={2}>
-        Or continue with
-      </Typography>
-      <Box flex={1} height="1px" bgcolor="#4f4f4f" />
-    </Box>
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={handleGoogleSignIn}
-          sx={{
-            mt: 5,
-            borderColor: "#4f4f4f",
-            color: "black",
-            justifyContent: "flex-start",
-            pl: 2,
-            marginInline: 10,
-            textTransform: "none",
-            "&:hover": { borderColor: "#7b2dfb" },
-          }}
-          startIcon={
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
+          {/* Footer Links */}
+          <Box mt={2} display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+              sx={{ color: "text.secondary" }}
             />
-          }
-        >
-          Continue with Google
-        </Button>
+            <Link href="#" color="primary" underline="hover">
+              Forgot Password?
+            </Link>
+          </Box>
+          <Typography variant="body2" align="center" mt={2} color="text.secondary">
+            Not a member?{" "}
+            <Link href="/register" color="primary" underline="hover">
+              Create New Account
+            </Link>
+          </Typography>
+          <Box mt={3} display="flex" alignItems="center">
+            <Box flex={1} height="1px" bgcolor="#4f4f4f" />
+            <Typography variant="body2" color="#b3b3b3" mx={2}>
+              Or continue with
+            </Typography>
+            <Box flex={1} height="1px" bgcolor="#4f4f4f" />
+          </Box>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleGoogleSignIn}
+            sx={{
+              mt: 3,
+              borderColor: "rgba(0, 0, 0, 0.23)",
+              color: "text.primary",
+              justifyContent: "center",
+              padding: "12px",
+              borderRadius: "8px",
+              textTransform: "none",
+              "&:hover": { borderColor: "#7b2dfb", bgcolor: "rgba(123, 45, 251, 0.04)" },
+            }}
+            startIcon={
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google"
+                style={{ width: "18px", height: "18px" }}
+              />
+            }
+          >
+            Continue with Google
+          </Button>
+        </Box>
       </Box>
     </Box>
-    </Box>
-  );
-};
+  )
+}
 
 export default Login;
