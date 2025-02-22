@@ -1,23 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { getAuth, getIdToken } from 'firebase/auth';
 import './HistoryPage.css';
-import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Checkbox,
-  IconButton
-} from '@mui/material';
-import { getAuth, getIdToken } from 'firebase/auth'; // Import Firebase Auth methods
 
 interface HistoryItem {
-  id: string; // Changed from '_id' to 'id' (Firestore document ID)
+  id: string;
   feature1: number;
   feature2: number;
   feature3: number;
@@ -34,22 +21,19 @@ interface HistoryItem {
   prediction: string;
 }
 
-
 const HistoryPage: React.FC = () => {
   const [data, setData] = useState<HistoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
-  // Fetch data from the backend
   const fetchData = async () => {
     const auth = getAuth();
     setLoading(true);
 
     try {
-      // Get the Firebase token
       const token = await getIdToken(auth.currentUser!);
-      
       const response = await axios.get<HistoryItem[]>('http://127.0.0.1:8000/history', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -65,9 +49,8 @@ const HistoryPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); 
 
-  // Select or deselect a row
   const handleSelect = (id: string) => {
     setSelected((prevSelected) => {
       const updated = new Set(prevSelected);
@@ -80,25 +63,21 @@ const HistoryPage: React.FC = () => {
     });
   };
 
-  // Select or deselect all rows
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = data.map((item) => item.id); // Use 'id' instead of '_id'
+      const allIds = data.map((item) => item.id);
       setSelected(new Set(allIds));
     } else {
       setSelected(new Set());
     }
   };
 
-  // Delete selected rows
   const handleDelete = async () => {
     const auth = getAuth();
     setLoading(true);
 
     try {
-      // Get the Firebase token
       const token = await getIdToken(auth.currentUser!);
-
       await Promise.all(
         Array.from(selected).map((id) =>
           axios.delete(`http://127.0.0.1:8000/history/${id}`, {
@@ -106,7 +85,7 @@ const HistoryPage: React.FC = () => {
           })
         )
       );
-      setData((prevData) => prevData.filter((item) => !selected.has(item.id))); // Use 'id' instead of '_id'
+      setData((prevData) => prevData.filter((item) => !selected.has(item.id)));
       setSelected(new Set());
       setError(null);
     } catch (error) {
@@ -117,122 +96,93 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  // Check if all items are selected
-  const isAllSelected = data.length > 0 && selected.size === data.length;
+  const filteredData = data.filter((item) =>
+    Object.values(item).some((value) =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-  // const handleSelect = (id: string) => {
-  //   setSelected((prevSelected) => {
-  //     const updated = new Set(prevSelected);
-  //     if (updated.has(id)) {
-  //       updated.delete(id);
-  //     } else {
-  //       updated.add(id);
-  //     }
-  //     return updated;
-  //   });
-  // };
-
-  // const handleSelectAll = (checked: boolean) => {
-  //   if (checked) {
-  //     const allIds = data.map((item) => item._id);
-  //     setSelected(new Set(allIds));
-  //   } else {
-  //     setSelected(new Set());
-  //   }
-  // };
-
-  // const handleDelete = async () => {
-  //   const token = localStorage.getItem('token');
-  //   try {
-  //     await Promise.all(
-  //       Array.from(selected).map((id) =>
-  //         axios.delete(`http://127.0.0.1:8000/history/${id}`, {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         })
-  //       )
-  //     );
-  //     setData((prevData) => prevData.filter((item) => !selected.has(item._id)));
-  //     setSelected(new Set());
-  //     setError(null);
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     setError('Failed to delete selected history. Please try again later.');
-  //   }
-  // };
-
-  // const isAllSelected = data.length > 0 && selected.size === data.length;
-
- 
   return (
-    <div className="history-page">
-      {error && <Typography className="error" color="error">{error}</Typography>}
-      {selected.size > 0 && (
-        <div style={{ marginBottom: '10px', textAlign: 'left' }}>
-          <IconButton
-            color="warning"
-            onClick={handleDelete}
-            title="Delete Selected"
-          >
-            <DeleteIcon />
-          </IconButton>
+    <div id="webcrumbs">
+      <div className="w-full max-w-[90%] lg:max-w-[1000px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
+        <div className="mb-10 space-y-4">
+          <h2 className="text-lg text-gray-600 text-center">Healthcare History Analytics</h2>
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Patient Records Dashboard
+          </h1>
         </div>
-      )}
-      <TableContainer component={Paper} className="table-container">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Checkbox
-                  indeterminate={selected.size > 0 && selected.size < data.length}
-                  checked={isAllSelected}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                />
-              </TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell>Gender</TableCell>
-              <TableCell>CP</TableCell>
-              <TableCell>TrestBPS</TableCell>
-              <TableCell>Chol</TableCell>
-              <TableCell>FBS</TableCell>
-              <TableCell>RestECG</TableCell>
-              <TableCell>Thalch</TableCell>
-              <TableCell>Exang</TableCell>
-              <TableCell>Oldpeak</TableCell>
-              <TableCell>Slope</TableCell>
-              <TableCell>CA</TableCell>
-              <TableCell>Thal</TableCell>
-              <TableCell>Prediction</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <Checkbox
-                    checked={selected.has(item.id)} // Use 'id' instead of '_id'
-                    onChange={() => handleSelect(item.id)} // Use 'id' instead of '_id'
-                  />
-                </TableCell>
-                <TableCell>{item.feature1}</TableCell>
-                <TableCell>{item.feature2 === 1 ? 'Male' : 'Female'}</TableCell>
-                <TableCell>{item.feature3}</TableCell>
-                <TableCell>{item.feature4}</TableCell>
-                <TableCell>{item.feature5}</TableCell>
-                <TableCell>{item.feature6}</TableCell>
-                <TableCell>{item.feature7}</TableCell>
-                <TableCell>{item.feature8}</TableCell>
-                <TableCell>{item.feature9}</TableCell>
-                <TableCell>{item.feature10}</TableCell>
-                <TableCell>{item.feature11}</TableCell>
-                <TableCell>{item.feature12}</TableCell>
-                <TableCell>{item.feature13}</TableCell>
-                <TableCell>{item.prediction}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {loading && <Typography className="loading" color="textSecondary">Loading...</Typography>}
+
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-2">
+              <span className="material-symbols-outlined text-indigo-600 cursor-pointer" onClick={handleDelete}>delete</span>
+              <span className="text-sm text-gray-600">Selected items: {selected.size}</span>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search records..."
+                className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                search
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                <tr>
+                  <th className="p-4 text-left rounded-tl-lg">
+                    <span className="material-symbols-outlined cursor-pointer" onClick={() => handleSelectAll(!selected.size)}>
+                      {selected.size ? 'check_box' : 'check_box_outline_blank'}
+                    </span>
+                  </th>
+                  {[
+                    "Age", "Gender", "CP", "TrestBPS", "Chol", "FBS", "RestECG",
+                    "Thalch", "Exang", "Oldpeak", "Slope", "CA", "Thal", "Prediction"
+                  ].map((header) => (
+                    <th key={header} className="p-4 text-left whitespace-nowrap">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredData.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4">
+                      <span
+                        className="material-symbols-outlined text-gray-400 hover:text-indigo-600 cursor-pointer"
+                        onClick={() => handleSelect(item.id)}
+                      >
+                        {selected.has(item.id) ? 'check_box' : 'check_box_outline_blank'}
+                      </span>
+                    </td>
+                    <td className="p-4 whitespace-nowrap">{item.feature1}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature2 === 1 ? 'Male' : 'Female'}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature3}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature4}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature5}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature6}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature7}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature8}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature9}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature10}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature11}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature12}</td>
+                    <td className="p-4 whitespace-nowrap">{item.feature13}</td>
+                    <td className="p-4 whitespace-nowrap">{item.prediction}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {loading && <p className="text-center text-gray-600">Loading...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
+      </div>
     </div>
   );
 };

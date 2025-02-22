@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar } from '@mui/material';
-import HistoryIcon from '@mui/icons-material/History';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import './Inputpagenavbar.css';
-import heartIcon from './Animations/healthcare.png';
 import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth } from './firebase';
+import './Inputpagenavbar.css';
 
 interface NavbarProps {
   title: string;
@@ -50,10 +46,6 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
     return () => unsubscribe();
   }, []);
 
-  const handleBackClick = () => {
-    navigate('/input');
-  };
-
   const handleLogout = async () => {
     try {
       const auth = getAuth();
@@ -68,60 +60,102 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
   };
 
   const isHistoryPage = location.pathname === '/history';
-  const isMyAccountPage = location.pathname === '/myaccount';
+  const isInputPage = location.pathname === '/input';
 
   return (
-    <div className="navbar">
-      <div className="left-section">
-        {isHistoryPage || isMyAccountPage ? (
-          <>
-            <ArrowBackIcon onClick={handleBackClick} className="back-icon" />
-            <h1>{isHistoryPage ? 'Prediction History' : 'Profile'}</h1>
-          </>
-        ) : (
-          <>
-            <div className="navbar-title" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-              <img src={heartIcon} alt="Heartview Icon" className="navbar-favicon" />
-              <h1>{title || 'Heartview'}</h1>
+    <div id="webcrumbs">
+      <div className="w-full bg-gradient-to-br from-slate-50 to-indigo-50 p-6">
+        <nav className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/healthcare.png"
+                  alt="HeartView"
+                  className="w-8 h-8 transform hover:rotate-12 transition-transform duration-300"
+                />
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                  HeartView
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex gap-2">
+                  <button
+                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+                    onClick={() => navigate('/')} // Navigate to Home
+                  >
+                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+                      home
+                    </span>
+                    <span>Home</span>
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+                    onClick={() => navigate('/Input')} // Navigate to Inputpage
+                  >
+                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+                      Input
+                    </span>
+                    <span>Prediction</span>
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+                    onClick={() => navigate('/history')} // Navigate to History
+                  >
+                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+                      history
+                    </span>
+                    <span>History</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            {!isAuthenticated ? (
-              <>
-                <ArrowBackIcon onClick={() => navigate('/')} className="back-icon" />
-                <button onClick={() => navigate('/login')} className="nav-button">Login</button>
-              </>
-            ) : (
-              <>
-                <ArrowBackIcon onClick={() => navigate('/')} className="back-icon" />
-                <ArrowForwardIcon onClick={() => navigate('/input')} className="back-icon" />
-                <HistoryIcon onClick={() => navigate('/history')} className="history-icon" />
-              </>
-            )}
-          </>
-        )}
+            <div className="flex items-center gap-4">
+              <button
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+              <details className="relative">
+                <summary className="list-none cursor-pointer">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                    {isGoogleUser && user?.photoURL ? (
+                      <Avatar
+                        src={user.photoURL}
+                        alt="Profile"
+                        sx={{ width: 40, height: 40 }}
+                        onClick={() => navigate('/myaccount')}
+                      />
+                    ) : (
+                      <AccountCircleIcon
+                        sx={{ width: 40, height: 40, color: 'gray' }}
+                        onClick={() => navigate('/myaccount')}
+                      />
+                    )}
+                  </div>
+                </summary>
+                {/* <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-10">
+                  <button
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => navigate('/myaccount')}
+                  >
+                    <span className="material-symbols-outlined">person</span>
+                    <span>My Profile</span>
+                  </button>
+                  <button
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <span className="material-symbols-outlined">settings</span>
+                    <span>Settings</span>
+                  </button>
+                </div> */}
+              </details>
+            </div>
+          </div>
+        </nav>
       </div>
-
-      {isAuthenticated && (
-        <div className="right-section">
-          <button onClick={handleLogout} className="logout-button">
-            Logout
-          </button>
-          {isGoogleUser ? (
-            user?.photoURL && (
-              <Avatar
-                src={user.photoURL}
-                alt="Profile"
-                sx={{ width: 40, height: 40, marginLeft: '10px', cursor: 'pointer' }}
-                onClick={() => navigate('/myaccount')}
-              />
-            )
-          ) : (
-            <AccountCircleIcon
-              sx={{ width: 40, height: 40, marginLeft: '10px', cursor: 'pointer', color: 'gray' }}
-              onClick={() => navigate('/myaccount')}
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 };

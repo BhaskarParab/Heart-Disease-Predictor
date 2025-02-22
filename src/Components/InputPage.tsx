@@ -2,9 +2,9 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { getAuth, getIdToken } from 'firebase/auth'; // Import necessary Firebase functions
-import './InputPage.css';
+import { getAuth, getIdToken } from 'firebase/auth';
 import ResultModal from './ResultModal';
+import './InputPage.css';
 
 interface FormData {
   feature1: string;
@@ -51,21 +51,15 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const placeholders: { [key in keyof FormData]: string } = {
-    feature1: 'Age',
-    feature2: 'Gender (M/F)',
-    feature3: 'CP',
-    feature4: 'TrestBPS',
-    feature5: 'Chol',
-    feature6: 'FBS',
-    feature7: 'RestECG',
-    feature8: 'Thalch',
-    feature9: 'Exang',
-    feature10: 'Oldpeak',
-    feature11: 'Slope',
-    feature12: 'CA',
-    feature13: 'Thal',
-  };
+  const featureLabels = [
+    'Age', 'Gender', 'CP', 'TrestBPS', 'Chol', 'FBS', 'RestECG',
+    'Thalch', 'Exang', 'Oldpeak', 'Slope', 'CA', 'Thal'
+  ];
+
+  const featureIcons = [
+    'person', 'wc', 'monitor_heart', 'favorite', 'cardiology', 'health_metrics',
+    'medication', 'ecg', 'heart_plus', 'healing', 'medical_services', 'local_hospital', 'psychology'
+  ];
 
   // Load form data from sessionStorage if available
   useEffect(() => {
@@ -79,14 +73,14 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
+    sessionStorage.setItem('formData', JSON.stringify(updatedData));
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
+    sessionStorage.setItem('formData', JSON.stringify(updatedData));
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +88,7 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     const numericValue = value.replace(/[^0-9.]/g, '');
     const updatedData = { ...formData, [name]: numericValue };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData)); // Save to sessionStorage
+    sessionStorage.setItem('formData', JSON.stringify(updatedData));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -131,14 +125,14 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     }
 
     try {
-      const authInstance = getAuth(); // Initialize Firebase Auth
+      const authInstance = getAuth();
       const user = authInstance.currentUser;
       if (!user) {
         setError('No user found. Please log in again.');
         return;
       }
 
-      const token = await getIdToken(user); // Get the Firebase ID token
+      const token = await getIdToken(user);
       const response = await axios.post<PredictionResponse>(
         'http://127.0.0.1:8000/predict',
         data,
@@ -172,48 +166,86 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Close modal
+    setIsModalOpen(false);
   };
 
   return (
-    <div className="input-page">
-      <form onSubmit={handleSubmit} className="input-form">
-        {Object.keys(formData).map((feature, index) => (
-          feature === 'feature2' ? (
-            <FormControl key={index} fullWidth margin="normal">
-              <InputLabel id={`label-${feature}`}>Gender</InputLabel>
-              <Select
-                labelId={`label-${feature}`}
-                name={feature}
-                value={formData[feature as keyof FormData]}
-                onChange={handleSelectChange}
-                required
-              >
-                <MenuItem value="M">Male</MenuItem>
-                <MenuItem value="F">Female</MenuItem>
-              </Select>
-            </FormControl>
-          ) : (
-            <TextField
-              key={index}
-              type="text"
-              name={feature}
-              label={placeholders[feature as keyof FormData] || feature}
-              value={formData[feature as keyof FormData]}
-              onChange={handleTextFieldChange}
-              onInput={handleInput}
-              required
-              fullWidth
-              margin="normal"
-            />
-          )
-        ))}
-        <div className="Submit">
-          <Button type="submit" variant="contained" color="primary">Submit</Button>
-        </div>
-      </form>
+    <div id="webcrumbs">
+      <div className="w-full max-w-[90%] lg:max-w-[1000px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
+        <header className="text-center mb-12">
+          <p className="text-lg mt-4 text-gray-600">Advanced Heart Health Analysis System</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-300">
+            HeartView AI Prediction
+          </h1>
+        </header>
 
-      {error && <Typography variant="body1" color="error">{error}</Typography>}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <section className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="grid grid-cols-3 gap-6">
+              {Object.keys(formData).map((feature, index) => (
+                <div key={feature} className="relative group">
+                  {feature === 'feature2' ? (
+                    <FormControl fullWidth>
+                      <InputLabel id={`label-${feature}`}>Gender</InputLabel>
+                      <Select
+                        labelId={`label-${feature}`}
+                        name={feature}
+                        value={formData[feature as keyof FormData]}
+                        onChange={handleSelectChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300"
+                      >
+                        <MenuItem value="M">Male</MenuItem>
+                        <MenuItem value="F">Female</MenuItem>
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <TextField
+                      type="text"
+                      name={feature}
+                      label={featureLabels[index]}
+                      value={formData[feature as keyof FormData]}
+                      onChange={handleTextFieldChange}
+                      onInput={handleInput}
+                      fullWidth
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300"
+                    />
+                  )}
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors">
+                    {featureIcons[index]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className="grid grid-cols-4 gap-6">
+            {["Accuracy", "Security", "Real-time", "AI Powered"].map((feature, index) => (
+              <div key={feature} className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300">
+                <span className="material-symbols-outlined text-4xl text-blue-500 mb-4">
+                  {["precision_manufacturing", "security", "speed", "smart_toy"][index]}
+                </span>
+                <h3 className="font-semibold mb-2">{feature}</h3>
+                <p className="text-sm text-gray-600">Advanced healthcare analysis feature</p>
+              </div>
+            ))}
+          </div>
+
+          {error && (
+            <div className="text-red-600 text-center p-4 rounded-lg bg-red-50">
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center space-x-2"
+          >
+            <span className="material-symbols-outlined">medical_services</span>
+            <span>Analyze Heart Health</span>
+          </Button>
+        </form>
+      </div>
 
       <ResultModal
         open={isModalOpen}

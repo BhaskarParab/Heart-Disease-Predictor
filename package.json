@@ -16,6 +16,8 @@
     "@types/react-router-dom": "^5.3.3",
     "firebase": "^11.1.0",
     "framer-motion": "^11.3.21",
+    "lucide-react": "^0.475.0",
+    "next": "^15.1.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-lottie": "^1.2.10",
@@ -25,7 +27,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "concurrently \"cd ./fastapi && uvicorn main:app --reload\" \"react-scripts start\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
