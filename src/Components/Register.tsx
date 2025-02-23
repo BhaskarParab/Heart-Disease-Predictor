@@ -132,7 +132,7 @@ const Register: React.FC = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926')] opacity-5 bg-cover bg-center" />
         <div className="animate-pulse absolute -top-20 -right-20 w-40 h-40 bg-purple-300 rounded-full blur-3xl opacity-20" />
         <div className="animate-pulse absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20" />
-
+  
         <div className="flex gap-8 items-center justify-center">
           <div className="w-[500px] bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
@@ -148,7 +148,7 @@ const Register: React.FC = () => {
                 </h2>
                 <p className="text-gray-500">Join our healthcare community</p>
               </div>
-
+  
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {/* Username Field */}
                 <div className="relative group">
@@ -164,7 +164,7 @@ const Register: React.FC = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                   />
                 </div>
-
+  
                 {/* Email Field */}
                 <div className="relative group">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-600 transition-colors">
@@ -179,7 +179,7 @@ const Register: React.FC = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                   />
                 </div>
-
+  
                 {/* Password Field */}
                 <div className="relative group">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-600 transition-colors">
@@ -194,7 +194,7 @@ const Register: React.FC = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                   />
                 </div>
-
+  
                 {/* Gender Field */}
                 <div className="relative group">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-600 transition-colors">
@@ -211,7 +211,7 @@ const Register: React.FC = () => {
                     <option value="female">Female</option>
                   </select>
                 </div>
-
+  
                 {/* Date of Birth Field */}
                 <div className="relative group">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-600 transition-colors">
@@ -225,7 +225,7 @@ const Register: React.FC = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                   />
                 </div>
-
+  
                 {/* Submit Button */}
                 <button
                   type="submit"
@@ -233,14 +233,18 @@ const Register: React.FC = () => {
                 >
                   Register
                 </button>
-
+  
+                {/* Error Message */}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                {successMessage && <p className="text-green-500 text-sm text-center">{successMessage}</p>}
+  
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-6">
                   <div className="flex-1 h-px bg-gray-200" />
                   <span className="text-gray-500">or</span>
                   <div className="flex-1 h-px bg-gray-200" />
                 </div>
-
+  
                 {/* Google Sign-In Button */}
                 <button
                   type="button"
@@ -254,7 +258,7 @@ const Register: React.FC = () => {
                   />
                   <span className="text-gray-700 group-hover:text-indigo-600">Continue with Google</span>
                 </button>
-
+  
                 {/* Login Link */}
                 <p className="text-center text-gray-600 mt-6">
                   Already have an account?

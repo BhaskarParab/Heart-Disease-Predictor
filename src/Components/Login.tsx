@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { app, db } from "../firebase";
@@ -93,7 +93,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                   {feature.icon}
                 </span>
                 <div className="group-hover:translate-x-2 transition-all duration-300">
-                  <h3 className="text-2xl font-semibold mb-2 group-hover:text-violet-600 transition-colors">
+                  <h3 className="text-2xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 group-hover:text-gray-800 transition-colors">
@@ -167,9 +167,9 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                     Remember me
                   </span>
                 </label>
-                <a href="#" className="text-sm text-violet-600 hover:text-violet-800 hover:underline transition-all">
-                  Forgot password?
-                </a>
+                <Link to="/forgot-password" className="text-sm text-violet-600 hover:text-violet-800 hover:underline transition-all">
+  Forgot password?
+</Link>
               </div>
 
               <button

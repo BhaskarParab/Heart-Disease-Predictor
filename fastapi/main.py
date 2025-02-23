@@ -214,6 +214,14 @@ async def delete_history(doc_id: str, request: Request):
     except Exception as e:
         logger.error(f"Error deleting prediction {doc_id}: {e}")
         raise HTTPException(status_code=500, detail="Error deleting prediction")
+    
+@app.get("/check-user/{email}")
+async def check_user(email: str):
+    try:
+        user = auth.get_user_by_email(email)
+        return {"exists": True}
+    except:
+        raise HTTPException(status_code=404, detail="User not found")
 
 @app.get("/")
 async def root():

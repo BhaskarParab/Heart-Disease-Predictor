@@ -173,7 +173,13 @@ const HistoryPage: React.FC = () => {
                     <td className="p-4 whitespace-nowrap">{item.feature11}</td>
                     <td className="p-4 whitespace-nowrap">{item.feature12}</td>
                     <td className="p-4 whitespace-nowrap">{item.feature13}</td>
-                    <td className="p-4 whitespace-nowrap">{item.prediction}</td>
+                    <td
+  className={`p-4 whitespace-nowrap font-semibold ${
+    Number(item.prediction) === 0 ? "text-green-600" : "text-red-600"
+  }`}
+>
+  {Number(item.prediction) === 0 ? "Not Detected" : "Detected"}
+</td>
                   </tr>
                 ))}
               </tbody>

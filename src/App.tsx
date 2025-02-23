@@ -6,6 +6,7 @@ import Login from "./Components/Login";
 import Register from "./Components/Register";
 import MyAccount from "./MyAccount";
 import Navbar from "./Inputpagenavbar";
+import ForgotPassword from "./Components/ForgotPassword";
 import "./App.css"; // Global styles
 import Home from "./Components/Home";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -53,6 +54,7 @@ const App: React.FC = () => {
         <Route path="/input" element={isAuthenticated ? <InputPage onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/history" element={isAuthenticated ? <HistoryPage /> : <Navigate to="/login" />} />
         <Route path="/myaccount" element={isAuthenticated ? <MyAccount /> : <Navigate to="/login" />} />
+        <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );
