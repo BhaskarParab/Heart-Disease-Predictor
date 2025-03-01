@@ -20,15 +20,26 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled } from "@mui/material/styles";
 import {
-  Favorite,
-  ShowChart,
+  // Favorite,
+  // ShowChart,
   Security,
   Timeline,
   Info,
-  FavoriteBorder,
+  // FavoriteBorder,
+} from "@mui/icons-material";
+import {
+  MonitorHeart,      // For CP
+  Favorite,          // For TrestBPS
+  Medication,        // For Chol
+  HealthAndSafety,   // For FBS
+  ShowChart,         // For RestECG
+  AddCircleOutline,  // For Thalach (ecg)
+  MedicalServices,   // For Oldpeak
+  LocalHospital,     // For CP alternative
+  Psychology         // For Thal
 } from "@mui/icons-material";
 import './Home.css';
-// import InputPageNavbar from "../Inputpagenavbar";
+import InputPageNavbar from "../Inputpagenavbar";
 
 const GradientText = styled(Typography)(({ theme }) => ({
   background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
@@ -84,18 +95,51 @@ const Home: React.FC = () => {
     },
   ];
 
-  const healthParams  = [
-    "CP (Chest Pain Type)",
-    "TrestBPS",
-    "Chol",
-    "FBS",
-    "RestECG",
-    "Thalach",
-    "Exang",
-    "Oldpeak",
-    "Slope",
-    "CA",
-    "Thal"
+  const healthParams = [
+    { 
+      param: "CP (Chest Pain Type)",
+      icon: <MonitorHeart fontSize="large" color="error" />
+    },
+    { 
+      param: "TrestBPS",
+      icon: <Favorite fontSize="large" color="primary" />
+    },
+    { 
+      param: "Chol",
+      icon: <Medication fontSize="large" color="secondary" />
+    },
+    { 
+      param: "FBS",
+      icon: <HealthAndSafety fontSize="large" color="action" />
+    },
+    { 
+      param: "RestECG",
+      icon: <ShowChart fontSize="large" color="success" />
+    },
+    { 
+      param: "Thalach",
+      icon: <AddCircleOutline fontSize="large" color="error" />
+    },
+    { 
+      param: "Exang",
+      icon: <AddCircleOutline fontSize="large" color="primary" />
+    },
+    { 
+      param: "Oldpeak",
+      icon: <MedicalServices fontSize="large" color="secondary" />
+    },
+    { 
+      param: "Slope",
+      icon: <MedicalServices fontSize="large" color="action" />
+    },
+    { 
+      param: "CA",
+      icon: <LocalHospital fontSize="large" color="success" />
+    },
+    { 
+      param: "Thal",
+      icon: <Psychology fontSize="large" color="action" />
+    }
   ];
 
   const faqs = [
@@ -106,10 +150,10 @@ const Home: React.FC = () => {
 
   return (
     <Box sx={{ background: 'linear-gradient(135deg, #f8fbff 0%, #fcf4ff 100%)' }}>
- {/* <InputPageNavbar title="HeartView" />  */}
+ <InputPageNavbar title="HeartView" /> 
       <Container maxWidth="lg">
         {/* Hero Section */}
-        <Box textAlign="center" py={10}>
+        <Box textAlign="center" py={8}>
           <GradientText variant="h2" gutterBottom>
             Welcome to HeartView
           </GradientText>
@@ -147,55 +191,55 @@ const Home: React.FC = () => {
 
      {/* Health Parameters Section */}
      <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" gutterBottom align="center" sx={{ 
-            fontWeight: 'bold', 
-            mb: 6,
-            background: 'linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+  <Typography variant="h4" gutterBottom align="center" sx={{ 
+    fontWeight: 'bold', 
+    mb: 6,
+    background: 'linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent'
+  }}>
+    Health Parameters We Analyze
+  </Typography>
+  <Grid container spacing={4}>
+    {healthParams.map((item, index) => (
+      <Grid item xs={12} md={6} lg={4} key={index}>
+        <Paper
+          sx={{
+            p: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 4,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: 'primary.main',
+              boxShadow: 3,
+              transform: 'translateY(-4px)'
+            },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Box sx={{
+            color: 'primary.main',
+            mb: 2,
+            fontSize: '2.5rem',
+            borderRadius: '50%',
+            p: 0.5,
           }}>
-            Health Parameters We Analyze
+            {item.icon}
+          </Box>
+          <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
+            {item.param}
           </Typography>
-          <Grid container spacing={4}>
-            {healthParams.map((param, index) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 4,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      boxShadow: 3,
-                      transform: 'translateY(-4px)'
-                    },
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}
-                >
-                  <FavoriteBorder
-                    sx={{
-                      color: 'primary.main',
-                      mb: 2,
-                      fontSize: '2.5rem',
-                      borderRadius: '50%',
-                      p: 0.5,
-                    }}
-                  />
-                  <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                    {param}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Comprehensive analysis of your {param.toLowerCase()} levels
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+          <Typography variant="body2" color="text.secondary">
+            Comprehensive analysis of your {item.param.toLowerCase()} levels
+          </Typography>
+        </Paper>
+      </Grid>
+    ))}
+  </Grid>
+</Box>
         
         {/* FAQ Section */}
         <Paper sx={{ p: 4, mb: 8, borderRadius: 4 }}>

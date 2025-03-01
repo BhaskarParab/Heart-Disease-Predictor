@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { getAuth, getIdToken } from 'firebase/auth';
 import './HistoryPage.css';
+import InputPageNavbar from "../Inputpagenavbar";
 
 interface HistoryItem {
   id: string;
@@ -27,6 +28,8 @@ const HistoryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchColumn, setSearchColumn] = useState<string>('all');
+  const [matchType, setMatchType] = useState<'contains' | 'exact'>('contains');
 
   const fetchData = async () => {
     const auth = getAuth();
@@ -49,7 +52,7 @@ const HistoryPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []); 
+  }, []);
 
   const handleSelect = (id: string) => {
     setSelected((prevSelected) => {
@@ -96,17 +99,93 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredData = data.filter((item) => {
+    const searchValue = searchTerm.toLowerCase();
+
+    return Object.entries(item).some(([key, value]) => {
+      // Skip id field from search
+      if (key === 'id') return false;
+
+      // Handle gender display value first
+      let displayValue = value.toString().toLowerCase();
+      if (key === 'feature2') {
+        displayValue = value === 1 ? 'male' : 'female';
+      }
+
+      // Handle prediction display value
+      if (key === 'prediction') {
+        displayValue = Number(value) === 0 ? 'not detected' : 'detected';
+      }
+
+      // Handle column filtering
+      if (searchColumn !== 'all') {
+        const columnMap: { [key: string]: string } = {
+          'Age': 'feature1',
+          'Gender': 'feature2',
+          'CP': 'feature3',
+          'TrestBPS': 'feature4',
+          'Chol': 'feature5',
+          'FBS': 'feature6',
+          'RestECG': 'feature7',
+          'Thalch': 'feature8',
+          'Exang': 'feature9',
+          'Oldpeak': 'feature10',
+          'Slope': 'feature11',
+          'CA': 'feature12',
+          'Thal': 'feature13',
+          'Prediction': 'prediction'
+        };
+
+        const targetKey = columnMap[searchColumn];
+        if (!targetKey) return false;
+
+        if (key !== targetKey) return false;
+
+        // Special handling for Gender column
+        if (targetKey === 'feature2') {
+          const genderMatch = displayValue === searchValue;
+          return matchType === 'exact'
+            ? genderMatch
+            : displayValue.includes(searchValue);
+        }
+
+        // Special handling for Prediction column
+        if (targetKey === 'prediction') {
+          const predictionMatch = displayValue === searchValue;
+          return matchType === 'exact'
+            ? predictionMatch
+            : displayValue.includes(searchValue);
+        }
+      }
+      // Handle numeric ranges
+      if (!isNaN(Number(value)) && key !== 'feature2' && key !== 'prediction') {
+        if (searchValue.startsWith('>')) {
+          const number = Number(searchValue.slice(1));
+          return Number(value) > number;
+        }
+        if (searchValue.startsWith('<')) {
+          const number = Number(searchValue.slice(1));
+          return Number(value) < number;
+        }
+        if (searchValue.includes('-')) {
+          const [min, max] = searchValue.split('-').map(Number);
+          return Number(value) >= min && Number(value) <= max;
+        }
+      }
+
+      // Handle text search
+      return matchType === 'exact'
+        ? displayValue === searchValue
+        : displayValue.includes(searchValue);
+    });
+  });
 
   return (
     <div id="webcrumbs">
-      <div className="w-full max-w-[90%] lg:max-w-[1000px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
+      <div className=" max-w-[100%] lg:max-w-[1271px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
+        <InputPageNavbar title="HeartView" />
         <div className="mb-10 space-y-4">
-          <h2 className="text-lg text-gray-600 text-center">Healthcare History Analytics</h2>
+          <h2 className="text-lg text-gray-600 text-center" style={{ paddingTop: "-1.75rem" }}>Healthcare History Analytics</h2>
           <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Patient Records Dashboard
           </h1>
@@ -118,17 +197,50 @@ const HistoryPage: React.FC = () => {
               <span className="material-symbols-outlined text-indigo-600 cursor-pointer" onClick={handleDelete}>delete</span>
               <span className="text-sm text-gray-600">Selected items: {selected.size}</span>
             </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search records..."
-                className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                search
-              </span>
+
+
+            <div className="flex items-center gap-4">
+              <select
+                className="rounded-lg border border-gray-200 p-2"
+                value={searchColumn}
+                onChange={(e) => setSearchColumn(e.target.value)}
+              >
+                <option value="all">All Columns</option>
+                {[
+                  "Age", "Gender", "CP", "TrestBPS", "Chol", "FBS", "RestECG",
+                  "Thalch", "Exang", "Oldpeak", "Slope", "CA", "Thal", "Prediction"
+                ].map(column => (
+                  <option key={column} value={column}>{column}</option>
+                ))}
+              </select>
+
+              <div className="flex gap-2">
+                <button
+                  className={`px-3 py-1 rounded-lg ${matchType === 'contains' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  onClick={() => setMatchType('contains')}
+                >
+                  Contains
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-lg ${matchType === 'exact' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  onClick={() => setMatchType('exact')}
+                >
+                  Exact
+                </button>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search records..."
+                  className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  search
+                </span>
+              </div>
             </div>
           </div>
 
@@ -173,13 +285,14 @@ const HistoryPage: React.FC = () => {
                     <td className="p-4 whitespace-nowrap">{item.feature11}</td>
                     <td className="p-4 whitespace-nowrap">{item.feature12}</td>
                     <td className="p-4 whitespace-nowrap">{item.feature13}</td>
-                    <td
-  className={`p-4 whitespace-nowrap font-semibold ${
-    Number(item.prediction) === 0 ? "text-green-600" : "text-red-600"
-  }`}
->
-  {Number(item.prediction) === 0 ? "Not Detected" : "Detected"}
-</td>
+                    <td className="p-4 whitespace-nowrap">
+                      <span className={`px-4 py-1.5 rounded-full font-semibold inline-block transform hover:scale-105 transition-all duration-300 ${Number(item.prediction) === 0
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                        }`}>
+                        {Number(item.prediction) === 0 ? "Not Detected" : "Detected"}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -192,5 +305,6 @@ const HistoryPage: React.FC = () => {
     </div>
   );
 };
+
 
 export default HistoryPage;

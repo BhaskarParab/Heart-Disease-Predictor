@@ -7,6 +7,7 @@ import Register from "./Components/Register";
 import MyAccount from "./MyAccount";
 import Navbar from "./Inputpagenavbar";
 import ForgotPassword from "./Components/ForgotPassword";
+// import Navbar from "./Inputpagenavbar";
 import "./App.css"; // Global styles
 import Home from "./Components/Home";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -46,7 +47,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <Navbar title="Heartview" onLogout={isAuthenticated ? handleLogout : undefined} />
+      {/* <Navbar title="Heartview" onLogout={isAuthenticated ? handleLogout : undefined} /> */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={!isAuthenticated ? <Login setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />

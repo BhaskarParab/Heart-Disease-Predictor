@@ -8,7 +8,7 @@
 *,
 :after,
 :before {
-  border: 0 solid #e5e7eb;
+  border: 0 solid #62baec;
   box-sizing: border-box;
 }
 :after,
@@ -195,7 +195,7 @@ textarea {
 }
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af;
+  color: #14b5ef;
   opacity: 1;
 }
 [role="button"],
@@ -251,7 +251,7 @@ video {
   --tw-ring-inset: ;
   --tw-ring-offset-width: 0px;
   --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgba(59, 130, 246, 0.5);
+  --tw-ring-color: rgba(93, 247, 255, 0.5);
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   --tw-shadow: 0 0 #0000;
@@ -304,7 +304,7 @@ video {
   --tw-ring-inset: ;
   --tw-ring-offset-width: 0px;
   --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgba(59, 130, 246, 0.5);
+  --tw-ring-color: #6af0ff80;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   --tw-shadow: 0 0 #0000;

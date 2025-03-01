@@ -6,6 +6,7 @@ import { getAuth } from "firebase/auth"
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore"
 import { AccountCircle, Email, Wc, Cake, Edit, Save } from "@mui/icons-material"
 import './MyAccount.css';
+import InputPageNavbar from "./Inputpagenavbar";
 
 interface User {
   username: string
@@ -110,18 +111,13 @@ const MyAccount: React.FC = () => {
   }
 
   return (
-    <div
-      id="webcrumbs"
-      // className="w-[1200px] bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl shadow-2xl p-8 relative overflow-hidden"
-    >
-      {/* <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926')] opacity-5 bg-cover bg-center" />
+    <div id="webcrumbs">
+      <div className=" bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl shadow-2xl p-8 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926')] opacity-5 bg-cover bg-center" />
       <div className="animate-pulse absolute -top-20 -right-20 w-40 h-40 bg-purple-300 rounded-full blur-3xl opacity-20" />
-      <div className="animate-pulse absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20" /> */}
-
-      <div className="mb-10 space-y-4 relative">
-        <h2 className="text-2xl text-gray-600 text-center font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-          Healthcare History Analytics
-        </h2>
+      <div className="animate-pulse absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20" />
+      <InputPageNavbar title="HeartView" /> 
+      <div className="mb-10 space-y-4 relative w-[10%]">
         <div className="w-[800px] mx-auto">
           <section className="bg-gradient-to-br from-indigo-100 to-purple-50 rounded-xl p-8 shadow-lg backdrop-blur-sm">
             <div className="relative mb-8">
@@ -140,11 +136,14 @@ const MyAccount: React.FC = () => {
                   <div className="flex items-center justify-center mb-6 relative">
                     <div className="absolute w-32 h-32 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full blur-xl opacity-30 animate-pulse" />
                     <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-indigo-400 ring-offset-4 ring-offset-white hover:scale-105 transition-transform duration-300 relative z-10">
-                      <img
-                        src={user.photoURL || "https://api.dicebear.com/6.x/avataaars/svg?seed=Felix"}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                      />
+                    <img
+  src={user.photoURL || `https://api.dicebear.com/6.x/avataaars/svg?seed=${
+    user.gender.toLowerCase() === 'male' ? 'Max' : 
+    user.gender.toLowerCase() === 'female' ? 'Anna' : 'Sammy'
+  }`}
+  alt="Avatar"
+  className="w-full h-full object-cover"
+/>
                     </div>
                   </div>
 
@@ -207,8 +206,9 @@ const MyAccount: React.FC = () => {
             )}
           </section>
         </div>
-    //   </div>
-    // </div>
+    </div>
+     </div>
+    </div>
   )
 }
 

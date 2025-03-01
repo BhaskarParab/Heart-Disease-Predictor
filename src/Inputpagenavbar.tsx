@@ -59,12 +59,17 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
     }
   };
 
+  const handleSignIn = () => {
+    navigate('/Login');
+  };
+
+
   const isHistoryPage = location.pathname === '/history';
   const isInputPage = location.pathname === '/input';
 
   return (
     <div id="webcrumbs">
-      <div className="w-full bg-gradient-to-br from-slate-50 to-indigo-50 p-6">
+      {/* <div className="w-full bg-gradient-to-br from-slate-50 to-indigo-50 p-6"> */}
         <nav className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -111,6 +116,8 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <>
               <button
                 className="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105"
                 onClick={handleLogout}
@@ -135,28 +142,23 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
                     )}
                   </div>
                 </summary>
-                {/* <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-10">
-                  <button
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                    onClick={() => navigate('/myaccount')}
-                  >
-                    <span className="material-symbols-outlined">person</span>
-                    <span>My Profile</span>
-                  </button>
-                  <button
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                    onClick={() => navigate('/settings')}
-                  >
-                    <span className="material-symbols-outlined">settings</span>
-                    <span>Settings</span>
-                  </button>
-                </div> */}
-              </details>
+                </details>
+                </>
+              ) : (
+              <button
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105"
+                onClick={handleSignIn}
+              >
+                Sign In
+              </button>
+            )}
+                
+              {/* </details> */}
             </div>
           </div>
         </nav>
       </div>
-    </div>
+    // </div>
   );
 };
 
