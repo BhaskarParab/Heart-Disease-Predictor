@@ -1,11 +1,13 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography,
+import {
+  TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography,
   Skeleton,
-  CircularProgress } from '@mui/material';
+  CircularProgress
+} from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { getAuth, getIdToken } from 'firebase/auth';
-import ResultModal from './ResultModal';
+import ResultModal from './Result-Modal-Enhanced';
 import './InputPage.css';
 import InputPageNavbar from "../Inputpagenavbar";
 
@@ -100,37 +102,37 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
     setIsLoading(true);
     setError(null);
 
-  
+
     try {
-    const data = {
-      ...formData,
-      feature1: parseFloat(formData.feature1),
-      feature2: formData.feature2,
-      feature3: parseFloat(formData.feature3),
-      feature4: parseFloat(formData.feature4),
-      feature5: parseFloat(formData.feature5),
-      feature6: parseFloat(formData.feature6),
-      feature7: parseFloat(formData.feature7),
-      feature8: parseFloat(formData.feature8),
-      feature9: parseFloat(formData.feature9),
-      feature10: parseFloat(formData.feature10),
-      feature11: parseFloat(formData.feature11),
-      feature12: parseFloat(formData.feature12),
-      feature13: parseFloat(formData.feature13),
-    };
+      const data = {
+        ...formData,
+        feature1: parseFloat(formData.feature1),
+        feature2: formData.feature2,
+        feature3: parseFloat(formData.feature3),
+        feature4: parseFloat(formData.feature4),
+        feature5: parseFloat(formData.feature5),
+        feature6: parseFloat(formData.feature6),
+        feature7: parseFloat(formData.feature7),
+        feature8: parseFloat(formData.feature8),
+        feature9: parseFloat(formData.feature9),
+        feature10: parseFloat(formData.feature10),
+        feature11: parseFloat(formData.feature11),
+        feature12: parseFloat(formData.feature12),
+        feature13: parseFloat(formData.feature13),
+      };
 
-    const areFieldsValid = Object.entries(data).every(([key, value]) => {
-      if (key === 'feature2') {
-        return value === 'M' || value === 'F';
-      } else {
-        return !isNaN(value as number) && value !== '';
+      const areFieldsValid = Object.entries(data).every(([key, value]) => {
+        if (key === 'feature2') {
+          return value === 'M' || value === 'F';
+        } else {
+          return !isNaN(value as number) && value !== '';
+        }
+      });
+
+      if (!areFieldsValid) {
+        setError('Please fill all fields with valid numbers and valid gender (M/F).');
+        return;
       }
-    });
-
-    if (!areFieldsValid) {
-      setError('Please fill all fields with valid numbers and valid gender (M/F).');
-      return;
-    }
 
 
       const authInstance = getAuth();
@@ -151,37 +153,49 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       setIsModalOpen(true);
       setError(null);
 
-      // Reset form data and sessionStorage after successful submission
-      setFormData({
-        feature1: '',
-        feature2: '',
-        feature3: '',
-        feature4: '',
-        feature5: '',
-        feature6: '',
-        feature7: '',
-        feature8: '',
-        feature9: '',
-        feature10: '',
-        feature11: '',
-        feature12: '',
-        feature13: '',
-      });
-      sessionStorage.removeItem('formData');
-
     } catch (error) {
-    // Handle errors
-    console.error('Error:', error);
-    setError('Failed to fetch prediction. Please try again later.');
-  } finally {
-    // This runs whether successful or not
-    setIsLoading(false);
-  }
-};
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+      console.error('Error:', error);
+      setError('Failed to fetch prediction. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+      // Reset form data and sessionStorage after successful submission
+      const handleCloseModal = () => {
+        // Reset form data when modal closes
+        setFormData({
+          feature1: '',
+          feature2: '',
+          feature3: '',
+          feature4: '',
+          feature5: '',
+          feature6: '',
+          feature7: '',
+          feature8: '',
+          feature9: '',
+          feature10: '',
+          feature11: '',
+          feature12: '',
+          feature13: '',
+        });
+        sessionStorage.removeItem('formData');
+        setIsModalOpen(false);
+      };
+
+  //   } catch (error) {
+  //     // Handle errors
+  //     console.error('Error:', error);
+  //     setError('Failed to fetch prediction. Please try again later.');
+  //   } finally {
+  //     // This runs whether successful or not
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  // };
 
   return (
     <div id="webcrumbs">
@@ -212,9 +226,9 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
               {Object.keys(formData).map((feature, index) => (
                 <div key={feature} className="relative group">
                   {isLoading ? (
-                    <Skeleton 
-                      variant="rectangular" 
-                      width="100%" 
+                    <Skeleton
+                      variant="rectangular"
+                      width="100%"
                       height={56}
                       animation="wave"
                       className="rounded-lg"
@@ -295,9 +309,9 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
           >
             {isLoading ? (
               <>
-                <CircularProgress 
-                  size={24} 
-                  sx={{ color: 'white' }} 
+                <CircularProgress
+                  size={24}
+                  sx={{ color: 'white' }}
                   className="mr-2"
                 />
                 <span>Analyzing...</span>
@@ -315,6 +329,7 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       <ResultModal
         open={isModalOpen}
         prediction={prediction}
+        formData={{ feature4: formData.feature4, feature5: formData.feature5, feature8: formData.feature8}}
         onClose={handleCloseModal}
       />
     </div>

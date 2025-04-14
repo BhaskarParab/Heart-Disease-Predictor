@@ -1,20 +1,22 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase"; // Firebase configuration
+import { auth, db } from "../firebase";
 import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import "./Register.css"; // Import the CSS file
+import "./Register.css";
 
+interface FormErrors {
+  username?: string;
+  email?: string;
+  password?: string;
+  gender?: string;
+  dob?: string;
+  form?: string; // Added form property
+}
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState<{
-    username: string;
-    email: string;
-    password: string;
-    gender: string;
-    dob: string;
-  }>({
+  const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
@@ -22,61 +24,94 @@ const Register: React.FC = () => {
     dob: "",
   });
 
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+
+  const validateField = (name: string, value: string) => {
+    let error = "";
+    
+    switch (name) {
+      case "username":
+        if (!value.trim()) error = "Username is required";
+        else if (value.length < 3) error = "Username must be at least 3 characters";
+        break;
+      case "email":
+        if (!value) error = "Email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = "Invalid email format";
+        break;
+      case "password":
+        if (!value) error = "Password is required";
+        else if (value.length < 6) error = "Password must be at least 6 characters";
+        break;
+      case "gender":
+        if (!value) error = "Gender is required";
+        break;
+      case "dob":
+        if (!value) error = "Date of birth is required";
+        else {
+          const dobDate = new Date(value);
+          const today = new Date();
+          if (dobDate >= today) error = "Date of birth must be in the past";
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({ ...prevState, [name]: value }));
-    setTouchedFields((prevState) => ({ ...prevState, [name]: true }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Validate field when it changes
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+    }
   };
 
   const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({ ...prevState, [name]: value }));
-    setTouchedFields((prevState) => ({ ...prevState, [name]: true }));
-  };
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+    }
   };
 
   const validateForm = () => {
-    const { username, email, password, gender, dob } = formData;
-    return (
-      username.trim() !== "" &&
-      validateEmail(email) &&
-      password.trim() !== "" &&
-      gender !== "" &&
-      dob !== ""
-    );
+    const newErrors: FormErrors = {};
+    
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key as keyof typeof formData]);
+      if (error) newErrors[key as keyof FormErrors] = error;
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
     if (!validateForm()) {
-      setError("Please fill out all fields correctly.");
       return;
     }
-
+    
+    setIsSubmitting(true);
+    setSuccessMessage("");
+    
     try {
-      setError(null); // Clear previous errors
-
       // Create user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        formData.email, 
+        formData.password
+      );
       const user = userCredential.user;
-
-      console.log("User data being sent to Firestore:", {
-        username: formData.username,
-        email: formData.email,
-        gender: formData.gender,
-        dob: formData.dob,
-        createdAt: new Date().toISOString(),
-      });
 
       // Save user details to Firestore
       await setDoc(doc(db, "users", user.uid), {
@@ -85,26 +120,58 @@ const Register: React.FC = () => {
         gender: formData.gender,
         dob: formData.dob,
         createdAt: new Date().toISOString(),
+        emailVerified: false,
       });
 
-      // Send email verification to the user
+      // Send email verification
       await sendEmailVerification(user);
-
+      
       // Log out the user immediately after registration
       await signOut(auth);
 
-      // Proceed with successful registration
-      setSuccessMessage("Registration successful. You will be directed to the login page.");
-      setTimeout(() => navigate("/login"), 2000); // Redirect after 2 seconds
-    } catch (err: any) {
-      console.error("Error:", err);
-      setError(err.message || "Registration failed. Please try again.");
+      // Show success message and redirect
+      setSuccessMessage("Registration successful! Please check your email to verify your account. Redirecting to login...");
+      
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      
+      let errorMessage = "Registration failed. Please try again.";
+      
+      // Handle specific Firebase errors
+      if (error.code) {
+        switch (error.code) {
+          case "auth/email-already-in-use":
+            errorMessage = "This email is already registered.";
+            setErrors(prev => ({ ...prev, email: errorMessage }));
+            break;
+          case "auth/weak-password":
+            errorMessage = "Password should be at least 6 characters.";
+            setErrors(prev => ({ ...prev, password: errorMessage }));
+            break;
+          case "auth/invalid-email":
+            errorMessage = "Invalid email address.";
+            setErrors(prev => ({ ...prev, email: errorMessage }));
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
+      }
+      
+      setErrors(prev => ({ ...prev, form: errorMessage }));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      setError(null);
+      setIsSubmitting(true);
+      setErrors({});
+      setSuccessMessage("");
 
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -116,26 +183,29 @@ const Register: React.FC = () => {
         gender: "Not Specified",
         dob: "Not Specified",
         createdAt: new Date().toISOString(),
+        emailVerified: user.emailVerified,
       });
 
-      localStorage.setItem("token", user.refreshToken);
-      navigate("/");
-    } catch (err: any) {
-      console.error("Error:", err);
-      setError("Google Sign-In failed. Please try again.");
+      setSuccessMessage("Google registration successful! Redirecting...");
+      setTimeout(() => navigate("/"), 2000);
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      setErrors({ form: "Google Sign-In failed. Please try again." });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div id="webcrumbs">
-      <div className="w-[100%] bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl shadow-2xl p-8 relative overflow-hidden">
+      <div className="w-[100%] bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl shadow-8x4 p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926')] opacity-5 bg-cover bg-center" />
         <div className="animate-pulse absolute -top-20 -right-20 w-40 h-40 bg-purple-300 rounded-full blur-3xl opacity-20" />
         <div className="animate-pulse absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20" />
   
         <div className="flex gap-8 items-center justify-center">
           <div className="w-[500px] bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
+            <div className="absolute -inset-1 bg-gradient-to-r rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
             <div className="relative">
               <div className="flex flex-col items-center mb-8">
                 <img
@@ -161,8 +231,11 @@ const Register: React.FC = () => {
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.username ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all`}
                   />
+                  {errors.username && (
+                    <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                  )}
                 </div>
   
                 {/* Email Field */}
@@ -176,8 +249,11 @@ const Register: React.FC = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all`}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  )}
                 </div>
   
                 {/* Password Field */}
@@ -191,8 +267,11 @@ const Register: React.FC = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.password ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all`}
                   />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                  )}
                 </div>
   
                 {/* Gender Field */}
@@ -204,12 +283,17 @@ const Register: React.FC = () => {
                     name="gender"
                     value={formData.gender}
                     onChange={handleSelectChange}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all appearance-none bg-transparent"
+                    className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.gender ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all appearance-none bg-transparent`}
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
                   </select>
+                  {errors.gender && (
+                    <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+                  )}
                 </div>
   
                 {/* Date of Birth Field */}
@@ -222,21 +306,45 @@ const Register: React.FC = () => {
                     name="dob"
                     value={formData.dob}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.dob ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all`}
                   />
+                  {errors.dob && (
+                    <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+                  )}
                 </div>
+  
+                {/* Form-level error */}
+                {errors.form && (
+                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                    {errors.form}
+                  </div>
+                )}
+                
+                {/* Success message */}
+                {successMessage && (
+                  <div className="p-3 bg-green-50 text-green-600 rounded-lg text-sm">
+                    {successMessage}
+                  </div>
+                )}
   
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-500 transform hover:scale-[1.02] hover:shadow-lg"
+                  disabled={isSubmitting}
+                  className={`w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-500 transform hover:scale-[1.02] hover:shadow-lg ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  Register
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    "Register"
+                  )}
                 </button>
-  
-                {/* Error Message */}
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                {successMessage && <p className="text-green-500 text-sm text-center">{successMessage}</p>}
   
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-6">
@@ -249,14 +357,17 @@ const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full py-3 px-4 border border-gray-200 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition-all hover:border-indigo-500 group"
+                  disabled={isSubmitting}
+                  className={`w-full py-3 px-4 border border-gray-200 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition-all hover:border-indigo-500 group ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <img
                     src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                     alt="Google"
                     className="w-5 h-5"
                   />
-                  <span className="text-gray-700 group-hover:text-indigo-600">Continue with Google</span>
+                  <span className="text-gray-700 group-hover:text-indigo-600">
+                    {isSubmitting ? "Processing..." : "Continue with Google"}
+                  </span>
                 </button>
   
                 {/* Login Link */}

@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from dotenv import load_dotenv
-from firebase_admin import credentials, firestore, auth, initialize_app
+from firebase_admin import credentials, firestore, auth, initialize_app,messaging
 from firebase_admin.exceptions import FirebaseError
 
 # Constants
@@ -30,6 +30,29 @@ if not service_account_path:
 cred = credentials.Certificate(service_account_path)
 initialize_app(cred)
 db = firestore.client()
+
+def send_notification_to_user(user_id: str, title: str, body: str):
+    """Send a push notification to a specific user"""
+    try:
+        # In a real app, you would look up the user's FCM token from your database
+        # For now, we'll just log the notification
+        print(f"Would send notification to user {user_id}: {title} - {body}")
+        
+        # Example of actual notification sending (commented out as we don't have tokens)
+        # message = messaging.Message(
+        #     notification=messaging.Notification(
+        #         title=title,
+        #         body=body,
+        #     ),
+        #     token=user_fcm_token,
+        # )
+        # messaging.send(message)
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error sending notification: {e}")
+        return False
+
 
 # Firestore collections
 predictions_collection = db.collection("predictions")
@@ -227,3 +250,15 @@ async def check_user(email: str):
 async def root():
     """Root endpoint."""
     return {"message": "Welcome to the Heart Disease Predictor API"}
+
+# Add this endpoint to send test notifications
+@app.post("/send-test-notification")
+async def send_test_notification(request: Request):
+    """Endpoint to test notifications (for development)"""
+    user = get_current_user(request)
+    success = send_notification_to_user(
+        user["uid"],
+        "Test Notification",
+        "This is a test notification from the server."
+    )
+    return {"success": success}

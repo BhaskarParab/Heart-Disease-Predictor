@@ -107,7 +107,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
 
         {/* Right Section */}
         <section className="w-2/5 p-12 flex items-center">
-          <div className="w-full max-w-md bg-white/90 backdrop-blur-lg rounded-3xl p-10 shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all duration-300">
+          <div className="w-full max-w-md bg-white/90 rounded-3xl p-10 shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all duration-300">
             <div className="text-center mb-10">
               <img 
                 src="/healthcare.png" 
@@ -135,7 +135,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                   type="email"
                   name="email"
                   placeholder="Email address"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-200 transition-all duration-300"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-00 transition-all duration-300"
                   value={formData.email}
                   onChange={handleChange}
                   required

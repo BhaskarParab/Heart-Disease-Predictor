@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // Define the Firebase config type for better TypeScript support
 interface FirebaseConfig {
@@ -39,5 +40,32 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+const messaging = getMessaging(app);
 
-export { app , auth, db, googleProvider };
+// Request notification permission and get token
+const requestNotificationPermission = async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const currentToken = await getToken(messaging, { 
+        vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY 
+      });
+      if (currentToken) {
+        console.log('Notification token:', currentToken);
+        return currentToken;
+      } else {
+        console.log('No registration token available.');
+        return null;
+      }
+    } else {
+      console.log('Notification permission denied.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting notification permission:', error);
+    return null;
+  }
+};
+
+
+export { app , auth, db, googleProvider , messaging, requestNotificationPermission };

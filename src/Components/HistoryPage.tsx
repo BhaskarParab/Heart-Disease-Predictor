@@ -3,23 +3,41 @@ import axios from 'axios';
 import { getAuth, getIdToken } from 'firebase/auth';
 import './HistoryPage.css';
 import InputPageNavbar from "../Inputpagenavbar";
+import DataVisualizationEnhanced from './DataVisualizationEnhanced'; // Import the visualization component
+import { Paper, Typography, Tabs, Tab, Modal, Box } from '@mui/material';
 
 interface HistoryItem {
   id: string;
-  feature1: number;
-  feature2: number;
-  feature3: number;
-  feature4: number;
-  feature5: number;
-  feature6: number;
-  feature7: number;
-  feature8: number;
-  feature9: number;
-  feature10: number;
-  feature11: number;
-  feature12: number;
-  feature13: number;
-  prediction: string;
+  feature1: number; // Age
+  feature2: number; // Gender (1: Male, 0: Female)
+  feature3: number; // CP
+  feature4: number; // TrestBPS
+  feature5: number; // Chol
+  feature6: number; // FBS
+  feature7: number; // RestECG
+  feature8: number; // Thalch
+  feature9: number; // Exang
+  feature10: number; // Oldpeak
+  feature11: number; // Slope
+  feature12: number; // CA
+  feature13: number; // Thal
+  prediction: string; // 0: Not Detected, 1: Detected
+}
+
+interface HealthData {
+  date: string;
+  cholesterol: number;
+  bloodPressure: number;
+  heartRate: number;
+  cp: number;        // Chest Pain (feature3)
+  fbs: number;       // Fasting Blood Sugar (feature6)
+  restECG: number;   // Resting ECG (feature7)
+  exang: number;     // Exercise Induced Angina (feature9)
+  oldpeak: number;   // ST Depression (feature10)
+  slope: number;     // Slope of ST Segment (feature11)
+  ca: number;        // Major Vessels (feature12)
+  thal: number;
+  riskLevel: number;
 }
 
 const HistoryPage: React.FC = () => {
@@ -30,7 +48,10 @@ const HistoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchColumn, setSearchColumn] = useState<string>('all');
   const [matchType, setMatchType] = useState<'contains' | 'exact'>('contains');
+  const [selectedRow, setSelectedRow] = useState<HistoryItem | null>(null); // Track selected row
+  const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
 
+  // Fetch data from the backend
   const fetchData = async () => {
     const auth = getAuth();
     setLoading(true);
@@ -54,6 +75,36 @@ const HistoryPage: React.FC = () => {
     fetchData();
   }, []);
 
+  // Transform HistoryItem data into HealthData format for visualization
+  const transformToHealthData = (historyItem: HistoryItem): HealthData => ({
+    date: new Date().toISOString(), // Use current date or add a date field to HistoryItem
+    cholesterol: historyItem.feature5,
+    bloodPressure: historyItem.feature4,
+    heartRate: historyItem.feature8,
+    cp: historyItem.feature3,
+    fbs: historyItem.feature6,
+    restECG: historyItem.feature7,
+    exang: historyItem.feature9,
+    oldpeak: historyItem.feature10,
+    slope: historyItem.feature11,
+    ca: historyItem.feature12,
+    thal: historyItem.feature13,
+    riskLevel: Number(historyItem.prediction) === 0 ? 20 : 80, // Map prediction to risk level
+  });
+
+  // Handle row selection
+  const handleRowClick = (item: HistoryItem) => {
+    setSelectedRow(item);
+    setIsModalOpen(true); // Open modal when a row is selected
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedRow(null);
+  };
+
+  // Handle selection of items for deletion
   const handleSelect = (id: string) => {
     setSelected((prevSelected) => {
       const updated = new Set(prevSelected);
@@ -66,6 +117,7 @@ const HistoryPage: React.FC = () => {
     });
   };
 
+  // Handle select all
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const allIds = data.map((item) => item.id);
@@ -75,6 +127,7 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  // Handle deletion of selected items
   const handleDelete = async () => {
     const auth = getAuth();
     setLoading(true);
@@ -99,6 +152,7 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  // Filter data based on search term and column
   const filteredData = data.filter((item) => {
     const searchValue = searchTerm.toLowerCase();
 
@@ -182,7 +236,7 @@ const HistoryPage: React.FC = () => {
 
   return (
     <div id="webcrumbs">
-      <div className=" max-w-[100%] lg:max-w-[1271px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
+      <div className="max-w-[100%] lg:max-w-[1271px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
         <InputPageNavbar title="HeartView" />
         <div className="mb-10 space-y-4">
           <h2 className="text-lg text-gray-600 text-center" style={{ paddingTop: "-1.75rem" }}>Healthcare History Analytics</h2>
@@ -197,7 +251,6 @@ const HistoryPage: React.FC = () => {
               <span className="material-symbols-outlined text-indigo-600 cursor-pointer" onClick={handleDelete}>delete</span>
               <span className="text-sm text-gray-600">Selected items: {selected.size}</span>
             </div>
-
 
             <div className="flex items-center gap-4">
               <select
@@ -263,11 +316,18 @@ const HistoryPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => handleRowClick(item)} // Handle row click
+                  >
                     <td className="p-4">
                       <span
                         className="material-symbols-outlined text-gray-400 hover:text-indigo-600 cursor-pointer"
-                        onClick={() => handleSelect(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click when selecting
+                          handleSelect(item.id);
+                        }}
                       >
                         {selected.has(item.id) ? 'check_box' : 'check_box_outline_blank'}
                       </span>
@@ -287,8 +347,8 @@ const HistoryPage: React.FC = () => {
                     <td className="p-4 whitespace-nowrap">{item.feature13}</td>
                     <td className="p-4 whitespace-nowrap">
                       <span className={`px-4 py-1.5 rounded-full font-semibold inline-block transform hover:scale-105 transition-all duration-300 ${Number(item.prediction) === 0
-                          ? "bg-green-100 text-green-600"
-                          : "bg-red-100 text-red-600"
+                        ? "bg-green-100 text-green-600"
+                        : "bg-red-100 text-red-600"
                         }`}>
                         {Number(item.prediction) === 0 ? "Not Detected" : "Detected"}
                       </span>
@@ -299,12 +359,51 @@ const HistoryPage: React.FC = () => {
             </table>
           </div>
         </div>
-        {loading && <p className="text-center text-gray-600">Loading...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
+
+        {/* Modal for Data Visualization */}
+        <Modal
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          aria-labelledby="visualization-modal"
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90vw', // Use viewport width
+              maxWidth: '1300px', // Reasonable max width
+              height: '95vh', // Use viewport height
+              maxHeight: '800px', // Prevent excessive height
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+              overflowY: 'auto', // Add scroll for overflow
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Typography variant="h6" className="mb-4">
+              Health Data Visualization
+            </Typography>
+            {selectedRow && (
+              <DataVisualizationEnhanced
+                data={[transformToHealthData(selectedRow)]}
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  overflow: 'auto'
+                }}
+              />
+            )}
+
+          </Box>
+        </Modal>
       </div>
     </div>
   );
 };
-
 
 export default HistoryPage;
