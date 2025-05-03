@@ -104,6 +104,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<{ [doctorId: string]: string | null }>({});
+  const [feedbackTouched, setFeedbackTouched] = useState(false);
 
   const [feedback, setFeedback] = useState<FeedbackData>({
     doctorId: "",
@@ -250,7 +251,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
     };
 
     fetchDoctors();
-  }, []);
+  },);
 
   // Filter doctors based on search term and specialty
   const filteredDoctors = doctors.filter((doctor) => {
@@ -326,7 +327,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
    * Handles booking an appointment
    */
   const handleBookAppointment = () => {
-    if (!selectedSlot) {
+    if (!selectedSlots) {
       setSnackbar({
         open: true,
         message: "Please select an available slot.",
@@ -373,20 +374,28 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
       rating: 0,
       comments: "",
     });
+    setFeedbackTouched(false); // Reset touched state when reopening the dialog
     setIsFeedbackDialogOpen(true);
   };
-
+  
   /**
    * Closes the feedback dialog
    */
   const handleCloseFeedbackDialog = () => {
     setIsFeedbackDialogOpen(false);
   };
-
+  
   /**
    * Submits feedback for a doctor
    */
   const handleFeedbackSubmit = () => {
+    setFeedbackTouched(true); // mark fields as touched to show validation
+ 
+    if (feedback.rating <= 0 || feedback.comments.trim() === "") {
+      // Inline error handling or notification can be added here
+      return;
+    }
+  
     try {
       setTimeout(() => {
         // Update the doctor's rating (mock implementation)
@@ -395,58 +404,57 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
             doctor.id === feedback.doctorId
               ? {
                   ...doctor,
-                  rating: (doctor.rating * doctor.reviews + feedback.rating) / (doctor.reviews + 1),
+                  rating:
+                    (doctor.rating * doctor.reviews + feedback.rating) /
+                    (doctor.reviews + 1),
                   reviews: doctor.reviews + 1,
                 }
               : doctor
           )
         );
-
+  
         // Add notification
         addNotification({
           title: "Feedback Submitted",
           message: "Thank you for your feedback!",
           type: "success",
         });
-
-        setSnackbar({
-          open: true,
-          message: "Thank you for your feedback!",
-          severity: "success",
-        });
+  
         setIsFeedbackDialogOpen(false);
       }, 1000);
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to submit feedback. Please try again.",
-        severity: "error",
-      });
+      // Optional: handle error here if needed
     }
   };
-
+  
   /**
    * Handles rating change in feedback form
    */
-  const handleRatingChange = (event: React.SyntheticEvent, newValue: number | null) => {
+  const handleRatingChange = (
+    event: React.SyntheticEvent,
+    newValue: number | null
+  ) => {
     if (newValue !== null) {
       setFeedback((prev) => ({ ...prev, rating: newValue }));
     }
   };
-
+  
   /**
    * Handles comments change in feedback form
    */
-  const handleCommentsChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleCommentsChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setFeedback((prev) => ({ ...prev, comments: event.target.value }));
   };
-
+  
   /**
    * Closes the snackbar
    */
   const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
+    // No snackbar to close anymore
   };
+  
 
   // Calculate unread notifications
   const unreadNotifications = notifications.filter((n) => !n.read);
@@ -792,69 +800,81 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
         </DialogActions>
       </Dialog>
 
-      {/* Feedback Dialog */}
-      <Dialog
-        open={isFeedbackDialogOpen}
-        onClose={handleCloseFeedbackDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Leave Feedback</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              How would you rate your experience with this doctor?
-            </Typography>
-            <MuiRating
-              name="doctor-rating"
-              value={feedback.rating}
-              onChange={handleRatingChange}
-              precision={0.5}
-              size="large"
-              emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
-            />
-          </Box>
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              Additional comments (optional):
-            </Typography>
-            <TextareaAutosize
-              minRows={4}
-              style={{ 
-                width: '100%', 
-                padding: '8px', 
-                borderRadius: '4px', 
-                border: '1px solid rgba(0, 0, 0, 0.23)',
-                fontFamily: 'inherit',
-                fontSize: '0.875rem'
-              }}
-              value={feedback.comments}
-              onChange={handleCommentsChange}
-              placeholder="Share your experience with this doctor..."
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseFeedbackDialog} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleFeedbackSubmit}
-            variant="contained"
-            color="primary"
-            disabled={feedback.rating === 0}
-            sx={{
-              borderRadius: 2,
-              background: "linear-gradient(45deg,rgb(0, 94, 255) 30%,rgb(0, 115, 255) 90%)",
-              "&:hover": {
-                background: "linear-gradient(45deg,rgb(0, 106, 255) 30%,rgb(0, 81, 255) 90%)",
-              },
-            }}
-          >
-            Submit Feedback
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* // Feedback Dialog JSX */}
+<Dialog open={isFeedbackDialogOpen} onClose={handleCloseFeedbackDialog} maxWidth="sm" fullWidth>
+  <DialogTitle>Leave Feedback</DialogTitle>
+  <DialogContent>
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="body1" sx={{ mb: 1 }}>
+        How would you rate your experience with this doctor?
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <MuiRating
+          name="doctor-rating"
+          value={feedback.rating}
+          onChange={handleRatingChange}
+          precision={0.5}
+          size="large"
+          emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
+        />
+        {feedbackTouched && feedback.rating === 0 && (
+          <Typography variant="caption" color="error" sx={{ marginLeft: "12px", whiteSpace: "nowrap" }}>
+            Please provide a rating.
+          </Typography>
+        )}
+      </Box>
+    </Box>
+
+    <Box sx={{ mt: 3 }}>
+      <Typography variant="body1" sx={{ mb: 1 }}>
+        Additional comments (optional):
+      </Typography>
+      <TextareaAutosize
+        minRows={4}
+        style={{
+          width: "100%",
+          padding: "8px",
+          borderRadius: "4px",
+          border: "1px solid rgba(0, 0, 0, 0.23)",
+          fontFamily: "inherit",
+          fontSize: "0.875rem",
+        }}
+        value={feedback.comments}
+        onChange={handleCommentsChange}
+        placeholder="Share your experience with this doctor..."
+      />
+      {feedbackTouched && feedback.comments.trim() === "" && (
+        <Typography variant="caption" color="error">
+          Please leave a comment before submitting.
+        </Typography>
+      )}
+    </Box>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={handleCloseFeedbackDialog} color="primary">
+      Cancel
+    </Button>
+    <Button
+      onClick={handleFeedbackSubmit}
+      variant="contained"
+      color="primary"
+      sx={{
+        borderRadius: 2,
+        background:
+          "linear-gradient(45deg,rgb(0, 115, 255) 30%,rgb(0, 76, 255) 90%)",
+        "&:hover": {
+          background:
+            "linear-gradient(45deg,rgb(0, 110, 255) 30%,rgb(0, 72, 255) 90%)",
+        },
+      }}
+    >
+      Submit Feedback
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
 
       {/* Snackbar for notifications */}
       <Snackbar

@@ -18,7 +18,7 @@
     "@types/react-router-dom": "^5.3.3",
     "date-fns": "^2.30.0",
     "file-saver": "^2.0.5",
-    "firebase": "^11.1.0",
+    "firebase": "^11.6.1",
     "framer-motion": "^11.3.21",
     "jspdf": "^3.0.0",
     "lodash": "^4.17.21",
@@ -36,7 +36,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"cd ./fastapi && uvicorn main:app --reload\" \"set BROWSER=none && react-scripts start\"",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
