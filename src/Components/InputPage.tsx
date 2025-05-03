@@ -1,14 +1,19 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import axios from "axios";
 import {
-  TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
   Skeleton,
-  CircularProgress
-} from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import { getAuth, getIdToken } from 'firebase/auth';
-import ResultModal from './Result-Modal-Enhanced';
-import './InputPage.css';
+  CircularProgress,
+} from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { getAuth, getIdToken } from "firebase/auth";
+import ResultModal from "./Result-Modal-Enhanced";
+import "./InputPage.css";
 import InputPageNavbar from "../Inputpagenavbar";
 
 interface FormData {
@@ -36,72 +41,96 @@ interface InputPageProps {
 }
 
 const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
-  const [formData, setFormData] = useState<FormData>({
-    feature1: '',
-    feature2: '',
-    feature3: '',
-    feature4: '',
-    feature5: '',
-    feature6: '',
-    feature7: '',
-    feature8: '',
-    feature9: '',
-    feature10: '',
-    feature11: '',
-    feature12: '',
-    feature13: '',
-  });
+  const initialFormData: FormData = {
+    feature1: "",
+    feature2: "",
+    feature3: "",
+    feature4: "",
+    feature5: "",
+    feature6: "",
+    feature7: "",
+    feature8: "",
+    feature9: "",
+    feature10: "",
+    feature11: "",
+    feature12: "",
+    feature13: "",
+  };
 
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [prediction, setPrediction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   const featureLabels = [
-    'Age', 'Gender', 'CP', 'TrestBPS', 'Chol', 'FBS', 'RestECG',
-    'Thalch', 'Exang', 'Oldpeak', 'Slope', 'CA', 'Thal'
+    "Age",
+    "Gender",
+    "CP",
+    "TrestBPS",
+    "Chol",
+    "FBS",
+    "RestECG",
+    "Thalch",
+    "Exang",
+    "Oldpeak",
+    "Slope",
+    "CA",
+    "Thal",
   ];
 
   const featureIcons = [
-    'person', 'wc', 'monitor_heart', 'favorite', 'cardiology', 'health_metrics',
-    'medication', 'ecg', 'heart_plus', 'healing', 'medical_services', 'local_hospital', 'psychology'
+    "person",
+    "wc",
+    "monitor_heart",
+    "favorite",
+    "cardiology",
+    "health_metrics",
+    "medication",
+    "ecg",
+    "heart_plus",
+    "healing",
+    "medical_services",
+    "local_hospital",
+    "psychology",
   ];
 
   // Load form data from sessionStorage if available
   useEffect(() => {
-    const savedData = sessionStorage.getItem('formData');
+    const savedData = sessionStorage.getItem("formData");
     if (savedData) {
       setFormData(JSON.parse(savedData));
     }
   }, []);
 
-  const handleTextFieldChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleTextFieldChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData));
+    sessionStorage.setItem("formData", JSON.stringify(updatedData));
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData));
+    sessionStorage.setItem("formData", JSON.stringify(updatedData));
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericValue = value.replace(/[^0-9.]/g, '');
+    const numericValue = value.replace(/[^0-9.]/g, "");
     const updatedData = { ...formData, [name]: numericValue };
     setFormData(updatedData);
-    sessionStorage.setItem('formData', JSON.stringify(updatedData));
+    sessionStorage.setItem("formData", JSON.stringify(updatedData));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
-
 
     try {
       const data = {
@@ -122,29 +151,33 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       };
 
       const areFieldsValid = Object.entries(data).every(([key, value]) => {
-        if (key === 'feature2') {
-          return value === 'M' || value === 'F';
+        if (key === "feature2") {
+          return value === "M" || value === "F";
         } else {
-          return !isNaN(value as number) && value !== '';
+          return !isNaN(value as number) && value !== "";
         }
       });
 
       if (!areFieldsValid) {
-        setError('Please fill all fields with valid numbers and valid gender (M/F).');
+        setError(
+          "Please fill all fields with valid numbers and valid gender (M/F)."
+        );
         return;
       }
 
+      setFormData(initialFormData);
+      sessionStorage.removeItem("formData");
 
       const authInstance = getAuth();
       const user = authInstance.currentUser;
       if (!user) {
-        setError('No user found. Please log in again.');
+        setError("No user found. Please log in again.");
         return;
       }
 
       const token = await getIdToken(user);
       const response = await axios.post<PredictionResponse>(
-        'http://127.0.0.1:8000/predict',
+        "http://127.0.0.1:8000/predict",
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -152,36 +185,35 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       setPrediction(String(response.data.prediction));
       setIsModalOpen(true);
       setError(null);
-
     } catch (error) {
-      console.error('Error:', error);
-      setError('Failed to fetch prediction. Please try again later.');
+      console.error("Error:", error);
+      setError("Failed to fetch prediction. Please try again later.");
     } finally {
       setIsLoading(false);
     }
   };
 
-      // Reset form data and sessionStorage after successful submission
-      const handleCloseModal = () => {
-        // Reset form data when modal closes
-        setFormData({
-          feature1: '',
-          feature2: '',
-          feature3: '',
-          feature4: '',
-          feature5: '',
-          feature6: '',
-          feature7: '',
-          feature8: '',
-          feature9: '',
-          feature10: '',
-          feature11: '',
-          feature12: '',
-          feature13: '',
-        });
-        sessionStorage.removeItem('formData');
-        setIsModalOpen(false);
-      };
+  // Reset form data and sessionStorage after successful submission
+  const handleCloseModal = () => {
+    // Reset form data when modal closes
+    setFormData({
+      feature1: "",
+      feature2: "",
+      feature3: "",
+      feature4: "",
+      feature5: "",
+      feature6: "",
+      feature7: "",
+      feature8: "",
+      feature9: "",
+      feature10: "",
+      feature11: "",
+      feature12: "",
+      feature13: "",
+    });
+    sessionStorage.removeItem("formData");
+    setIsModalOpen(false);
+  };
 
   //   } catch (error) {
   //     // Handle errors
@@ -214,8 +246,13 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       <div className="w-full max-w-[90%] lg:max-w-[1271px] bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl p-6 md:p-8">
         <InputPageNavbar title="HeartView" />
         <header className="text-center mb-1 ">
-          <p className="text-lg mt-4 text-gray-600">Advanced Heart Health Analysis System</p>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-300" style={{ paddingBottom: "0.7rem" }}>
+          <p className="text-lg mt-4 text-gray-600">
+            Advanced Heart Health Analysis System
+          </p>
+          <h1
+            className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-300"
+            style={{ paddingBottom: "0.7rem" }}
+          >
             HeartView AI Prediction
           </h1>
         </header>
@@ -235,34 +272,41 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
                     />
                   ) : (
                     <>
-                      {feature === 'feature2' ? (
-                        <FormControl fullWidth>
-                          <InputLabel id={`label-${feature}`}>Gender</InputLabel>
-                          <Select
-                            labelId={`label-${feature}`}
+                      <FormControl fullWidth variant="outlined">
+                        {feature === "feature2" ? (
+                          <>
+                            <InputLabel id={`label-${feature}`}>
+                              Gender
+                            </InputLabel>
+                            <Select
+                              labelId={`label-${feature}`}
+                              label="Gender"
+                              name={feature}
+                              value={formData[feature as keyof FormData]}
+                              onChange={handleSelectChange}
+                              disabled={isLoading}
+                              IconComponent={() => null} // Remove default down arrow
+                            >
+                              <MenuItem value="M">Male</MenuItem>
+                              <MenuItem value="F">Female</MenuItem>
+                            </Select>
+                          </>
+                        ) : (
+                          <TextField
+                            type="text"
                             name={feature}
+                            label={featureLabels[index]}
                             value={formData[feature as keyof FormData]}
-                            onChange={handleSelectChange}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300"
+                            onChange={handleTextFieldChange}
+                            onInput={handleInput}
                             disabled={isLoading}
-                          >
-                            <MenuItem value="M">Male</MenuItem>
-                            <MenuItem value="F">Female</MenuItem>
-                          </Select>
-                        </FormControl>
-                      ) : (
-                        <TextField
-                          type="text"
-                          name={feature}
-                          label={featureLabels[index]}
-                          value={formData[feature as keyof FormData]}
-                          onChange={handleTextFieldChange}
-                          onInput={handleInput}
-                          fullWidth
-                          className="w-full px-4 py-3 rounded-0xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300"
-                          disabled={isLoading}
-                        />
-                      )}
+                            variant="outlined"
+                            fullWidth
+                          />
+                        )}
+                      </FormControl>
+
+                      {/* The floating icon outside input */}
                       <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors">
                         {featureIcons[index]}
                       </span>
@@ -274,26 +318,58 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
           </section>
 
           <div className="grid grid-cols-4 gap-6">
-            {["Accuracy", "Security", "Real-time", "AI Powered"].map((feature, index) => (
-              <div key={feature} className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300">
-                {isLoading ? (
-                  <>
-                    <Skeleton variant="circular" width={40} height={40} className="mb-4" />
-                    <Skeleton variant="text" width="60%" height={30} className="mb-2" />
-                    <Skeleton variant="text" width="80%" height={20} />
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-4xl text-blue-500 mb-4">
-                      {["precision_manufacturing", "security", "speed", "smart_toy"][index]}
-                    </span>
-                    <h3 className="font-semibold mb-2">{feature}</h3>
-                    <p className="text-sm text-gray-600">Advanced healthcare analysis feature</p>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+  {["Accuracy", "Security", "Speed", "Machine Learning"].map(
+    (feature, index) => (
+      <div
+        key={feature}
+        className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
+      >
+        {isLoading ? (
+          <>
+            <Skeleton
+              variant="circular"
+              width={40}
+              height={40}
+              className="mb-4"
+            />
+            <Skeleton
+              variant="text"
+              width="60%"
+              height={30}
+              className="mb-2"
+            />
+            <Skeleton variant="text" width="80%" height={20} />
+          </>
+        ) : (
+          <>
+            <span className="material-symbols-outlined text-4xl text-blue-500 mb-4">
+              {
+                [
+                  "precision_manufacturing",
+                  "security",
+                  "speed",
+                  "smart_toy",
+                ][index]
+              }
+            </span>
+            <h3 className="font-semibold mb-2">{feature}</h3>
+            <p className="text-sm text-gray-600">
+              {
+                [
+                  "Highly accurate predictions for better diagnosis",
+                  "Ensured data privacy and secure information handling",
+                  "Instant results for faster healthcare decisions",
+                  "ML model used to boost medical analysis",
+                ][index]
+              }
+            </p>
+          </>
+        )}
+      </div>
+    )
+  )}
+</div>
+
 
           {error && (
             <div className="text-red-600 text-center p-4 rounded-lg bg-red-50">
@@ -305,20 +381,22 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
             type="submit"
             variant="contained"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center space-x-2"
+            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium hover:from-indigo-600 hover:to-violet-600 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center space-x-2"
           >
             {isLoading ? (
               <>
                 <CircularProgress
                   size={24}
-                  sx={{ color: 'white' }}
+                  sx={{ color: "white" }}
                   className="mr-2"
                 />
                 <span>Analyzing...</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">medical_services</span>
+                <span className="material-symbols-outlined">
+                  medical_services
+                </span>
                 <span>Analyze Heart Health</span>
               </>
             )}
@@ -329,7 +407,11 @@ const InputPage: React.FC<InputPageProps> = ({ onLogout }) => {
       <ResultModal
         open={isModalOpen}
         prediction={prediction}
-        formData={{ feature4: formData.feature4, feature5: formData.feature5, feature8: formData.feature8}}
+        formData={{
+          feature4: formData.feature4,
+          feature5: formData.feature5,
+          feature8: formData.feature8,
+        }}
         onClose={handleCloseModal}
       />
     </div>

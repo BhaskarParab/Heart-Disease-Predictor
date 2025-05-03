@@ -748,22 +748,22 @@ const HealthRecommendations: React.FC<HealthRecommendationsProps> = ({ healthDat
                 onClick={generatePDF}
                 sx={{
                   borderRadius: 2,
-                  background: "linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)",
+                  background: "linear-gradient(45deg,rgb(0, 115, 255) 30%,rgb(0, 60, 255) 90%)",
                   "&:hover": {
-                    background: "linear-gradient(45deg, #3730a3 30%, #7e22ce 90%)",
+                    background: "linear-gradient(45deg,rgb(0, 89, 255) 30%,rgb(0, 64, 255) 90%)",
                   },
                 }}
               >
                 Download Full Plan
               </Button>
-              <Button
+              {/* <Button
                 variant="outlined"
                 color="primary"
                 onClick={generateReminders}
                 sx={{ borderRadius: 2, ml: 2 }}
               >
                 Set Reminders
-              </Button>
+              </Button> */}
             </Grid>
           </Grid>
         </Box>

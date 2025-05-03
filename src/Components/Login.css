@@ -195,7 +195,7 @@ textarea {
 }
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af;
+  color: #000000;
   opacity: 1;
 }
 [role="button"],
@@ -251,7 +251,7 @@ video {
   --tw-ring-inset: ;
   --tw-ring-offset-width: 0px;
   --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgba(144, 93, 255, 0.5);
+  --tw-ring-color: #4f91e1;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   --tw-shadow: 0 0 #0000;
@@ -304,7 +304,7 @@ video {
   --tw-ring-inset: ;
   --tw-ring-offset-width: 0px;
   --tw-ring-offset-color: #fff;
-  --tw-ring-color: #ad6aff80;
+  --tw-ring-color: #4f91e1;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   --tw-shadow: 0 0 #0000;
@@ -586,7 +586,7 @@ video {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 #webcrumbs .from-violet-600 {
-  --tw-gradient-from: #ac46ff var(--tw-gradient-from-position);
+  --tw-gradient-from: #4f91e1 var(--tw-gradient-from-position);
   --tw-gradient-to: rgba(124, 58, 237, 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
@@ -599,7 +599,7 @@ video {
   --tw-gradient-to: #eef2ff var(--tw-gradient-to-position);
 }
 #webcrumbs .to-indigo-600 {
-  --tw-gradient-to: #7762ff var(--tw-gradient-to-position);
+  --tw-gradient-to: #4f91e1 var(--tw-gradient-to-position);
 }
 #webcrumbs .bg-clip-text {
   background-clip: text;
@@ -687,7 +687,7 @@ video {
 }
 #webcrumbs .text-violet-600 {
   --tw-text-opacity: 1;
-  color: rgb(124 58 237 / var(--tw-text-opacity));
+  color:#4f91e1;
 }
 #webcrumbs .text-white {
   --tw-text-opacity: 1;
@@ -798,16 +798,16 @@ video {
   background-color: hsla(0, 0%, 100%, 0.7);
 }
 #webcrumbs .hover\:from-indigo-600:hover {
-  --tw-gradient-from: #a749ff var(--tw-gradient-from-position);
+  --tw-gradient-from: #4f91e1 var(--tw-gradient-from-position);
   --tw-gradient-to: rgba(79, 70, 229, 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 #webcrumbs .hover\:to-violet-600:hover {
-  --tw-gradient-to: #7200dd var(--tw-gradient-to-position);
+  --tw-gradient-to: #006eff var(--tw-gradient-to-position);
 }
 #webcrumbs .hover\:text-violet-800:hover {
   --tw-text-opacity: 1;
-  color: rgb(91 33 182 / var(--tw-text-opacity));
+  color: #4f91e1;
 }
 #webcrumbs .hover\:underline:hover {
   text-decoration-line: underline;
@@ -872,5 +872,5 @@ video {
 }
 #webcrumbs :is(.group:hover .group-hover\:text-violet-600) {
   --tw-text-opacity: 1;
-  color: rgb(124 58 237 / var(--tw-text-opacity));
+  color: #4f91e1;
 }

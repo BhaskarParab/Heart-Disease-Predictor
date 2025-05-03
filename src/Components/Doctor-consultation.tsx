@@ -103,6 +103,8 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  const [selectedSlots, setSelectedSlots] = useState<{ [doctorId: string]: string | null }>({});
+
   const [feedback, setFeedback] = useState<FeedbackData>({
     doctorId: "",
     rating: 0,
@@ -572,7 +574,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
         gutterBottom
         sx={{
           fontWeight: "bold",
-          color: "#4F46E5",
+          color: "rgb(0, 123, 255)",
           display: "flex",
           alignItems: "center",
           gap: 1,
@@ -680,61 +682,67 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
                   </Grid>
 
                   <Grid item xs={12} sm={4}>
-                    <Typography variant="body2" sx={{ mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <CalendarMonth fontSize="small" color="primary" />
-                      <strong>Available slots:</strong>
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      {doctor.availability.map((slot, index) => (
-                        <Chip
-                          key={index}
-                          label={slot}
-                          size="small"
-                          onClick={() => setSelectedSlot(slot)}
-                          sx={{
-                            mr: 0.5,
-                            mb: 0.5,
-                            cursor: "pointer",
-                            backgroundColor:
-                              selectedSlot === slot ? "#4F46E5" : undefined,
-                            color: selectedSlot === slot ? "#fff" : undefined,
-                          }}
-                        />
-                      ))}
-                    </Box>
-                    <Stack direction="column" spacing={1}>
-                      <Button
-                        variant="contained"
-                        startIcon={<CalendarMonth />}
-                        fullWidth
-                        onClick={() => {
-                          setSelectedDoctor(doctor);
-                          setIsDialogOpen(true);
-                        }}
-                        disabled={!selectedSlot}
-                        sx={{
-                          borderRadius: 2,
-                          background: "linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)",
-                          "&:hover": {
-                            background: "linear-gradient(45deg, #3730a3 30%, #7e22ce 90%)",
-                          },
-                        }}
-                      >
-                        Book Appointment
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={<Star />}
-                        fullWidth
-                        onClick={() => handleOpenFeedbackDialog(doctor)}
-                        sx={{
-                          borderRadius: 2,
-                        }}
-                      >
-                        Leave Feedback
-                      </Button>
-                    </Stack>
-                  </Grid>
+  <Typography variant="body2" sx={{ mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+    <CalendarMonth fontSize="small" color="primary" />
+    <strong>Available slots:</strong>
+  </Typography>
+  <Box sx={{ mb: 2 }}>
+    {doctor.availability.map((slot, index) => (
+      <Chip
+        key={index}
+        label={slot}
+        size="small"
+        onClick={() => {
+          setSelectedDoctor(doctor); // update selected doctor
+          setSelectedSlots({ [doctor.id]: slot }); // reset all other selections
+        }}
+        sx={{
+          mr: 0.5,
+          mb: 0.5,
+          cursor: "pointer",
+          backgroundColor: selectedSlots[doctor.id] === slot ? "rgb(0, 123, 255)" : undefined,
+          color: selectedSlots[doctor.id] === slot ? "#fff" : undefined,
+        }}
+      />
+    ))}
+  </Box>
+  <Stack direction="column" spacing={1}>
+    <Button
+      variant="contained"
+      startIcon={<CalendarMonth />}
+      fullWidth
+      onClick={() => {
+        setSelectedDoctor(doctor);
+        setIsDialogOpen(true);
+      }}
+      disabled={!selectedSlots[doctor.id]}
+      sx={{
+        borderRadius: 2,
+        background: selectedSlots[doctor.id]
+          ? "linear-gradient(45deg, rgb(0, 123, 255) 30%, rgb(0, 132, 255) 90%)"
+          : "linear-gradient(45deg, rgb(255, 255, 255) 30%, rgb(255, 255, 255) 90%)",
+        "&:hover": {
+          background: selectedSlots[doctor.id]
+            ? "linear-gradient(45deg, rgb(0, 89, 255) 30%, rgb(0, 81, 255) 90%)"
+            : "linear-gradient(45deg, rgb(49, 135, 255) 30%, rgb(0, 106, 255) 90%)",
+        },
+      }}
+    >
+      Book Appointment
+    </Button>
+    <Button
+      variant="outlined"
+      startIcon={<Star />}
+      fullWidth
+      onClick={() => handleOpenFeedbackDialog(doctor)}
+      sx={{
+        borderRadius: 2,
+      }}
+    >
+      Leave Feedback
+    </Button>
+  </Stack>
+</Grid>
                 </Grid>
               </Paper>
             </Grid>
@@ -754,7 +762,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
           <Typography>
             You are booking an appointment with{" "}
             <strong>{selectedDoctor?.name}</strong> on{" "}
-            <strong>{selectedSlot}</strong>.
+            <strong>{selectedDoctor ? selectedSlots[selectedDoctor.id] : ""}</strong>.
           </Typography>
           <Typography variant="body2" sx={{ mt: 2 }}>
             {selectedDoctor?.hospital}
@@ -764,7 +772,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)} color="secondary">
+          <Button onClick={() => setIsDialogOpen(false)} color="primary">
             Cancel
           </Button>
           <Button
@@ -773,9 +781,9 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
             color="primary"
             sx={{
               borderRadius: 2,
-              background: "linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)",
+              background: "linear-gradient(45deg,rgb(0, 115, 255) 30%,rgb(0, 76, 255) 90%)",
               "&:hover": {
-                background: "linear-gradient(45deg, #3730a3 30%, #7e22ce 90%)",
+                background: "linear-gradient(45deg,rgb(0, 110, 255) 30%,rgb(0, 72, 255) 90%)",
               },
             }}
           >
@@ -827,7 +835,7 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseFeedbackDialog} color="secondary">
+          <Button onClick={handleCloseFeedbackDialog} color="primary">
             Cancel
           </Button>
           <Button
@@ -837,9 +845,9 @@ const DoctorConsultation: React.FC<DoctorConsultationProps> = ({
             disabled={feedback.rating === 0}
             sx={{
               borderRadius: 2,
-              background: "linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)",
+              background: "linear-gradient(45deg,rgb(0, 94, 255) 30%,rgb(0, 115, 255) 90%)",
               "&:hover": {
-                background: "linear-gradient(45deg, #3730a3 30%, #7e22ce 90%)",
+                background: "linear-gradient(45deg,rgb(0, 106, 255) 30%,rgb(0, 81, 255) 90%)",
               },
             }}
           >

@@ -73,7 +73,8 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
         <nav className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 cursor-pointer"
+                onClick={() => navigate('/')}>
                 <img
                   src="/healthcare.png"
                   alt="HeartView"
@@ -84,45 +85,50 @@ const InputPageNavbar: React.FC<NavbarProps> = ({ title, onLogout }) => {
                 </span>
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex gap-2">
-                  <button
-                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
-                    onClick={() => navigate('/')} // Navigate to Home
-                  >
-                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
-                      home
-                    </span>
-                    <span>Home</span>
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
-                    onClick={() => navigate('/Input')} // Navigate to Inputpage
-                  >
-                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
-                      Input
-                    </span>
-                    <span>Prediction</span>
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
-                    onClick={() => navigate('/history')} // Navigate to History
-                  >
-                    <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
-                      history
-                    </span>
-                    <span>History</span>
-                  </button>
-                </div>
-              </div>
+  <div className="flex gap-2">
+    <button
+      className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+      onClick={() => navigate('/')} // Always show Home
+    >
+      <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+        home
+      </span>
+      <span>Home</span>
+    </button>
+
+    {isAuthenticated && (
+      <>
+        <button
+          className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+          onClick={() => navigate('/Input')} // Show only if authenticated
+        >
+          <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+            Input
+          </span>
+          <span>Prediction</span>
+        </button>
+        <button
+          className="px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 group"
+          onClick={() => navigate('/history')} // Show only if authenticated
+        >
+          <span className="material-symbols-outlined text-gray-600 group-hover:text-indigo-600">
+            history
+          </span>
+          <span>History</span>
+        </button>
+      </>
+    )}
+  </div>
+</div>
             </div>
             <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
               <button
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105"
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium hover:from-indigo-600 hover:to-violet-600 transform hover:scale-[1.02]  transition-all duration-300"
                 onClick={handleLogout}
               >
-                Logout
+                Sign out
               </button>
               <details className="relative">
                 <summary className="list-none cursor-pointer">

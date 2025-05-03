@@ -195,7 +195,7 @@ textarea {
 }
 input::placeholder,
 textarea::placeholder {
-  color: #14b5ef;
+  color: #000000;
   opacity: 1;
 }
 [role="button"],
@@ -304,7 +304,7 @@ video {
   --tw-ring-inset: ;
   --tw-ring-offset-width: 0px;
   --tw-ring-offset-color: #fff;
-  --tw-ring-color: #6af0ff80;
+  --tw-ring-color: #4f91e1;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   --tw-shadow: 0 0 #0000;
@@ -481,7 +481,7 @@ video {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 #webcrumbs .to-blue-500 {
-  --tw-gradient-to: #3b82f6 var(--tw-gradient-to-position);
+  --tw-gradient-to: #4f91e1 var(--tw-gradient-to-position);
 }
 #webcrumbs .to-purple-50 {
   --tw-gradient-to: #faf5ff var(--tw-gradient-to-position);

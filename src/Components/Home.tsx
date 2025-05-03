@@ -25,33 +25,35 @@ import {
   Security,
   Timeline,
   Info,
+  SmartToy,
+  VolunteerActivism,
   // FavoriteBorder,
 } from "@mui/icons-material";
 import {
-  MonitorHeart,      // For CP
-  Favorite,          // For TrestBPS
-  Medication,        // For Chol
-  HealthAndSafety,   // For FBS
-  ShowChart,         // For RestECG
-  AddCircleOutline,  // For Thalach (ecg)
-  MedicalServices,   // For Oldpeak
-  LocalHospital,     // For CP alternative
-  Psychology         // For Thal
+  MonitorHeart, // For CP
+  Favorite, // For TrestBPS
+  Medication, // For Chol
+  HealthAndSafety, // For FBS
+  ShowChart, // For RestECG
+  AddCircleOutline, // For Thalach (ecg)
+  MedicalServices, // For Oldpeak
+  LocalHospital, // For CP alternative
+  Psychology, // For Thal
 } from "@mui/icons-material";
-import './Home.css';
+import "./Home.css";
 import InputPageNavbar from "../Inputpagenavbar";
 
 const GradientText = styled(Typography)(({ theme }) => ({
   background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
 }));
 
 const FeatureCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  transition: 'transform 0.3s, box-shadow 0.3s',
-  '&:hover': {
-    transform: 'translateY(-8px)',
+  height: "100%",
+  transition: "transform 0.3s, box-shadow 0.3s",
+  "&:hover": {
+    transform: "translateY(-8px)",
     boxShadow: theme.shadows[8],
   },
 }));
@@ -59,53 +61,54 @@ const FeatureCard = styled(Card)(({ theme }) => ({
 const StyledInputCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius * 2,
-  transition: 'all 0.3s ease-in-out',
-  cursor: 'pointer',
-  '&:hover': {
-    transform: 'scale(1.02)',
+  transition: "all 0.3s ease-in-out",
+  cursor: "pointer",
+  "&:hover": {
+    transform: "scale(1.02)",
     boxShadow: theme.shadows[8],
   },
   border: `1px solid ${theme.palette.primary.light}`,
 }));
 
 const FlipCard = styled(Paper)(({ theme }) => ({
-  position: 'relative',
-  width: '81%',
-  height: '268px',
-  transition: 'transform 0.4s',
-  borderRadius: theme.shape.borderRadius * 7,
-  transformStyle: 'preserve-3d',
-  cursor: 'pointer',
-  '&.flipped': {
-    transform: 'rotateY(180deg)',
+  position: "relative",
+  width: "81%",
+  height: "268px",
+  transition: "transform 0.4s",
+  borderRadius: theme.shape.borderRadius * 3,
+  transformStyle: "preserve-3d",
+  cursor: "pointer",
+  "&.flipped": {
+    transform: "rotateY(180deg)",
   },
 }));
 
 const CardFace = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  width: '100%',
-  height: '100%',
-  backfaceVisibility: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+  backfaceVisibility: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
   padding: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius * 7,
+  borderRadius: theme.shape.borderRadius * 3,
   boxShadow: theme.shadows[2],
 }));
 
 const FrontFace = styled(CardFace)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
-  border: `2px solid ${theme.palette.primary.main}`,
+  // border: `2px solid ${theme.palette.primary.main}`,
 }));
 
 const BackFace = styled(CardFace)(({ theme }) => ({
-  background: 'linear-gradient(135deg,rgb(122, 170, 219) 0%,rgb(155, 126, 227) 100%)',
-  color: '#ffffff',
+  background:
+    "linear-gradient(135deg,rgb(31, 147, 255) 30%,rgb(0, 115, 255) 70%)",
+  color: "#ffffff",
   backgroundColor: theme.palette.primary.light,
-  transform: 'rotateY(180deg)',
-  justifyContent: 'flex-start',
+  transform: "rotateY(180deg)",
+  justifyContent: "flex-start",
 }));
 
 const Home: React.FC = () => {
@@ -118,7 +121,8 @@ const Home: React.FC = () => {
       icon: <MonitorHeart fontSize="large" color="error" />,
       description: "Type of chest pain experienced",
       importance: "Helps identify angina (reduced blood flow to heart)",
-      example: "0: Asymptomatic, 1: Typical angina, 2: Atypical angina, 3: Non-anginal pain",
+      example:
+        "0: Asymptomatic, 1: Typical angina, 2: Atypical angina, 3: Non-anginal pain",
     },
     {
       param: "TrestBPS (Resting Blood Pressure)",
@@ -149,11 +153,12 @@ const Home: React.FC = () => {
       icon: <ShowChart fontSize="large" color="success" />,
       description: "Resting electrocardiogram results",
       importance: "Detects heart rhythm abnormalities",
-      example: "0: Normal, 1: ST-T wave abnormality, 2: Left ventricular hypertrophy",
+      example:
+        "0: Normal, 1: ST-T wave abnormality, 2: Left ventricular hypertrophy",
     },
     {
       param: "Thalach (Max Heart Rate)",
-      icon: <AddCircleOutline fontSize="large" color="error" />,
+      icon: <VolunteerActivism fontSize="large" color="error" />,
       description: "Maximum heart rate achieved",
       importance: "Lower values may indicate heart issues",
       normalRange: "60-100 bpm (resting)",
@@ -161,7 +166,7 @@ const Home: React.FC = () => {
     },
     {
       param: "Exang (Exercise Induced Angina)",
-      icon: <AddCircleOutline fontSize="large" color="primary" />,
+      icon: <HealthAndSafety fontSize="large" color="primary" />,
       description: "Chest pain during exercise",
       importance: "Indicates coronary artery disease",
       example: "0: No, 1: Yes",
@@ -195,7 +200,7 @@ const Home: React.FC = () => {
       description: "Blood disorder affecting hemoglobin",
       importance: "Abnormalities can stress cardiovascular system",
       example: "3: Normal, 6: Fixed defect, 7: Reversible defect",
-    }
+    },
   ];
 
   const [flippedCards, setFlippedCards] = useState<boolean[]>(
@@ -204,33 +209,40 @@ const Home: React.FC = () => {
 
   const features = [
     {
-      icon: <Favorite fontSize="large" color="error" />,
-      title: "AI-Powered Predictions",
-      desc: "Advanced machine learning algorithms for accurate heart health assessment"
+      icon: <SmartToy fontSize="large" color="action" />,
+      title: "ML-Powered Predictions",
+      desc: "Advanced machine learning algorithms for accurate heart health assessment",
     },
     {
       icon: <ShowChart fontSize="large" color="success" />,
       title: "Comprehensive Analysis",
-      desc: "Detailed breakdown of key health indicators and their impacts"
+      desc: "Detailed breakdown of key health indicators and their impacts",
     },
     {
       icon: <Security fontSize="large" color="info" />,
       title: "Secure Data Handling",
-      desc: "Military-grade encryption for all your health data"
+      desc: "Military-grade encryption for all your health data",
     },
     {
       icon: <Timeline fontSize="large" color="warning" />,
       title: "Progress Tracking",
-      desc: "Monitor your heart health trends over time"
+      desc: "Monitor your heart health trends over time",
     },
   ];
 
-
-
   const faqs = [
-    { q: "Why do you need all these inputs?", a: "Each input provides crucial information that helps our AI model assess your heart health accurately." },
-    { q: "What if I don't know all the values?", a: "Consult with your healthcare provider to get accurate values." },
-    { q: "Is my data secure?", a: "We use state-of-the-art encryption and security measures." }
+    {
+      q: "Why do you need all these inputs?",
+      a: "Each input provides crucial information that helps our ML model assess your heart health accurately.",
+    },
+    {
+      q: "What if I don't know all the values?",
+      a: "Consult with your healthcare provider to get accurate values.",
+    },
+    {
+      q: "Is my data secure?",
+      a: "Your privacy is our top priority, protected by cutting-edge encryption and secure infrastructures.",
+    },
   ];
 
   const handleCardClick = (index: number) => {
@@ -239,10 +251,22 @@ const Home: React.FC = () => {
     setFlippedCards(newFlippedCards);
   };
 
-
   return (
-    <Box sx={{ background: 'linear-gradient(135deg, #f8fbff 0%, #fcf4ff 100%)' }}>
-      <InputPageNavbar title="HeartView" />
+    <Box
+      sx={{
+        background: "linear-gradient(135deg, #f8fbff 0%, #fcf4ff 100%)",
+        pt: 3,
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: "100%", // You can also try 900 or '600px'
+          mx: "auto", // Centers the box
+          px: { xs: 2, sm: 4 },
+        }}
+      >
+        <InputPageNavbar title="HeartView" />
+      </Box>
       <Container maxWidth="lg">
         {/* Hero Section */}
         <Box textAlign="center" py={8}>
@@ -250,12 +274,12 @@ const Home: React.FC = () => {
             Welcome to HeartView
           </GradientText>
           <Typography variant="h5" color="textSecondary" paragraph>
-            Empowering you with AI-driven heart health predictions
+            Empowering you with ML-driven heart health predictions
           </Typography>
           <Button
             variant="contained"
             size="large"
-            onClick={() => navigate('/input')}
+            onClick={() => navigate("/input")}
             sx={{ mt: 3, borderRadius: 20, px: 6, py: 2 }}
           >
             Start Your Heart Health Journey
@@ -267,14 +291,12 @@ const Home: React.FC = () => {
           {features.map((feature, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <FeatureCard>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <Box sx={{ mb: 2 }}>{feature.icon}</Box>
                   <Typography variant="h6" gutterBottom>
                     {feature.title}
                   </Typography>
-                  <Typography color="textSecondary">
-                    {feature.desc}
-                  </Typography>
+                  <Typography color="textSecondary">{feature.desc}</Typography>
                 </CardContent>
               </FeatureCard>
             </Grid>
@@ -283,67 +305,95 @@ const Home: React.FC = () => {
 
         {/* Health Parameters Section */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom align="center" sx={{
-            fontWeight: 'bold',
-            fontSize: '43px',
-            mb: 3,
-            background: 'linear-gradient(45deg, #4F46E5 30%, #9333EA 90%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            Health Parameters We Analyze
-          </Typography>
+          <GradientText
+            variant="h2"
+            gutterBottom
+            align="center"
+            sx={{
+              // fontWeight: 'bold',
+              fontSize: "47px",
+              mb: 3,
+            }}
+          >
+            Health Parameters We Analyse
+          </GradientText>
           <Grid container spacing={2}>
             {healthParams.map((item, index) => (
               <Grid item xs={12} md={6} lg={3} key={index} sx={{ mb: 2 }}>
                 <FlipCard
-                  className={flippedCards[index] ? 'flipped' : ''}
+                  className={flippedCards[index] ? "flipped" : ""}
                   onClick={() => handleCardClick(index)}
                   sx={{
-                    height: '280px',  // Reduced height from 300px
-                    margin: '0 auto'  // Center the cards
+                    height: "280px", // Reduced height from 300px
+                    margin: "0 auto", // Center the cards
                   }}
                 >
                   <FrontFace sx={{ p: 2 }}>
-                    <Box sx={{ color: 'primary.main', fontSize: '2rem', mb: 1 }}>
+                    <Box
+                      sx={{ color: "primary.main", fontSize: "2rem", mb: 1 }}
+                    >
                       {item.icon}
                     </Box>
-                    <Typography variant="h6" component="h3" sx={{
-                      mt: 2,
-                      fontWeight: 600,
-                      textAlign: 'center'
-                    }}>
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        mt: 2,
+                        fontWeight: 600,
+                        textAlign: "center",
+                      }}
+                    >
                       {item.param}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{
-                      mt: 1,
-                      textAlign: 'center'
-                    }}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        mt: 1,
+                        textAlign: "center",
+                      }}
+                    >
                       Click to learn more
                     </Typography>
                   </FrontFace>
 
                   <BackFace sx={{ p: 2 }}>
-                    <Typography variant="h6" component="h3" sx={{
-                      fontWeight: 600,
-                      color: 'common.white',
-                      mb: 2
-                    }}>
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        fontWeight: 600,
+                        color: "common.white",
+                        mb: 2,
+                      }}
+                    >
                       {item.param}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'common.white', mb: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "common.white", mb: 1 }}
+                    >
                       <strong>What it measures:</strong> {item.description}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'common.white', mb: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "common.white", mb: 1 }}
+                    >
                       <strong>Why it matters:</strong> {item.importance}
                     </Typography>
                     {item.normalRange && (
-                      <Typography variant="body2" sx={{ color: 'common.white', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "common.white", mb: 1 }}
+                      >
                         <strong>Healthy Range:</strong> {item.normalRange}
                       </Typography>
                     )}
                     {item.example && (
-                      <Typography variant="body2" sx={{ color: 'common.white' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "common.white" }}
+                      >
                         <strong>Example:</strong> {item.example}
                       </Typography>
                     )}
@@ -379,7 +429,7 @@ const Home: React.FC = () => {
           <Button
             variant="contained"
             size="large"
-            onClick={() => navigate('/input')}
+            onClick={() => navigate("/input")}
             sx={{ borderRadius: 20, px: 6, py: 2, mt: 3 }}
           >
             Get Your Prediction Now
@@ -388,13 +438,22 @@ const Home: React.FC = () => {
       </Container>
 
       {/* Footer */}
-      <Box component="footer" sx={{ bgcolor: 'background.paper', py: 4, mt: 8 }}>
+      <Box
+        component="footer"
+        sx={{ bgcolor: "background.paper", py: 4, mt: 8 }}
+      >
         <Container maxWidth="lg">
           <Typography variant="body2" color="textSecondary" align="center">
             © 2024 HeartView. All rights reserved.
           </Typography>
-          <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 1 }}>
-            Disclaimer: This tool is for informational purposes only and should not replace professional medical advice.
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            align="center"
+            sx={{ mt: 1 }}
+          >
+            Disclaimer: This tool is for informational purposes only and should
+            not replace professional medical advice.
           </Typography>
         </Container>
       </Box>

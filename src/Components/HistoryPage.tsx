@@ -5,6 +5,8 @@ import './HistoryPage.css';
 import InputPageNavbar from "../Inputpagenavbar";
 import DataVisualizationEnhanced from './DataVisualizationEnhanced'; // Import the visualization component
 import { Paper, Typography, Tabs, Tab, Modal, Box } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
 
 interface HistoryItem {
   id: string;
@@ -50,6 +52,8 @@ const HistoryPage: React.FC = () => {
   const [matchType, setMatchType] = useState<'contains' | 'exact'>('contains');
   const [selectedRow, setSelectedRow] = useState<HistoryItem | null>(null); // Track selected row
   const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
+  const isAllSelected = selected.size === data.length && data.length > 0;
+
 
   // Fetch data from the backend
   const fetchData = async () => {
@@ -269,13 +273,13 @@ const HistoryPage: React.FC = () => {
 
               <div className="flex gap-2">
                 <button
-                  className={`px-3 py-1 rounded-lg ${matchType === 'contains' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-6 py-1 rounded-lg ${matchType === 'contains' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
                   onClick={() => setMatchType('contains')}
                 >
                   Contains
                 </button>
                 <button
-                  className={`px-3 py-1 rounded-lg ${matchType === 'exact' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-6 py-1 rounded-lg ${matchType === 'exact' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
                   onClick={() => setMatchType('exact')}
                 >
                   Exact
@@ -302,8 +306,8 @@ const HistoryPage: React.FC = () => {
               <thead className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
                 <tr>
                   <th className="p-4 text-left rounded-tl-lg">
-                    <span className="material-symbols-outlined cursor-pointer" onClick={() => handleSelectAll(!selected.size)}>
-                      {selected.size ? 'check_box' : 'check_box_outline_blank'}
+                    <span className="material-symbols-outlined cursor-pointer" onClick={() => handleSelectAll(selected.size !== data.length)}>
+                      {selected.size === data.length ? 'check_box' : 'check_box_outline_blank'}
                     </span>
                   </th>
                   {[
@@ -383,11 +387,29 @@ const HistoryPage: React.FC = () => {
               overflowY: 'auto', // Add scroll for overflow
               display: 'flex',
               flexDirection: 'column',
+              border: 'none !important',    // Ensure no border
+    outline: 'none',
             }}
           >
-            <Typography variant="h6" className="mb-4">
-              Health Data Visualization
-            </Typography>
+            <CloseIcon
+    onClick={handleCloseModal}
+    sx={{
+      position: 'absolute',
+      top: 28,
+      right: 28,
+      cursor: 'pointer',
+      color: 'gray',
+      '&:hover': {
+        color: 'black',
+        transform: 'scale(1.1)'
+      }
+    }}
+  />        
+            <Box sx={{ mb: 2 }}>
+  <Typography variant="h6" >
+    Health Data Visualization
+  </Typography>
+</Box>
             {selectedRow && (
               <DataVisualizationEnhanced
                 data={[transformToHealthData(selectedRow)]}
